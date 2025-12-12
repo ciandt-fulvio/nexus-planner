@@ -22,7 +22,7 @@ htmlcov/
 *.prof
 
 # Node.js / Frontend
-node_modules/
+*node_modules*
 dist/
 build/
 *.log
