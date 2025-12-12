@@ -120,24 +120,24 @@
 
 ### Tests for User Story 3 (TDD Required)
 
-- [ ] T035 [P] [US3] Write unit test for FeatureAnalysis model validation in backend/tests/unit/test_models.py
-- [ ] T036 [P] [US3] Write integration test for POST /analysis endpoint in backend/tests/integration/test_api.py
-- [ ] T037 [P] [US3] Write test for empty description validation (400 error) in backend/tests/integration/test_api.py
+- [x] T035 [P] [US3] Write unit test for FeatureAnalysis model validation in backend/tests/unit/test_models.py
+- [x] T036 [P] [US3] Write integration test for POST /analysis endpoint in backend/tests/integration/test_api.py
+- [x] T037 [P] [US3] Write test for empty description validation (400 error) in backend/tests/integration/test_api.py
 
 ### Implementation for User Story 3
 
-- [ ] T038 [P] [US3] Create ImpactedRepo, RecommendedPerson, Risk, SuggestedStep models in backend/src/nexus_api/models/analysis.py
-- [ ] T039 [US3] Create FeatureAnalysis and AnalyzeFeatureRequest models in backend/src/nexus_api/models/analysis.py
-- [ ] T040 [US3] Create example analysis mocked data in backend/src/nexus_api/data/mock_data.py
-- [ ] T041 [US3] Create analysis router with POST /analysis in backend/src/nexus_api/routers/analysis.py
-- [ ] T042 [US3] Register analysis router in main.py
-- [ ] T043 [US3] Add validation block to analysis.py module
-- [ ] T044 [US3] Verify T035, T036, T037 tests now pass
+- [x] T038 [P] [US3] Create ImpactedRepo, RecommendedPerson, Risk, SuggestedStep models in backend/src/nexus_api/models/analysis.py
+- [x] T039 [US3] Create FeatureAnalysis and AnalyzeFeatureRequest models in backend/src/nexus_api/models/analysis.py
+- [x] T040 [US3] Create example analysis mocked data in backend/src/nexus_api/data/mock_data.py
+- [x] T041 [US3] Create analysis router with POST /analysis in backend/src/nexus_api/routers/analysis.py
+- [x] T042 [US3] Register analysis router in main.py
+- [x] T043 [US3] Add validation block to analysis.py module
+- [x] T044 [US3] Verify T035, T036, T037 tests now pass
 
 ### Frontend Service for User Story 3
 
-- [ ] T045 [P] [US3] Create useAnalyzeFeature mutation hook in frontend/src/services/analysis.ts
-- [ ] T046 [US3] Export FeatureAnalysis types from frontend/src/services/analysis.ts
+- [x] T045 [P] [US3] Create useAnalyzeFeature mutation hook in frontend/src/services/analysis.ts
+- [x] T046 [US3] Export FeatureAnalysis types from frontend/src/services/analysis.ts
 
 **Checkpoint**: Analysis endpoint functional, frontend hook ready
 

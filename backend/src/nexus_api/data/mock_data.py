@@ -9,6 +9,14 @@ Expected output: Lists of Repository, Person, and FeatureAnalysis data
 """
 
 from nexus_api.models import Alert, AlertType
+from nexus_api.models.analysis import (
+    FeatureAnalysis,
+    ImpactedRepo,
+    RecommendedPerson,
+    Risk,
+    RiskLevel,
+    SuggestedStep,
+)
 from nexus_api.models.person import Person, PersonRepository, Technology
 from nexus_api.models.repository import (
     ActivityLevel,
@@ -326,6 +334,120 @@ def get_person_by_id(person_id: str) -> Person | None:
         if person.id == person_id:
             return person
     return None
+
+
+# Example analysis - exactly matches frontend/src/data/mockData.ts
+EXAMPLE_ANALYSIS = FeatureAnalysis(
+    feature="Implementar suporte a exportação de relatórios financeiros consolidados",
+    impactedRepos=[
+        ImpactedRepo(
+            name="reports-service",
+            confidence=95,
+            reasoning="Forte histórico de commits contendo 'report', 'export', 'finance'. Responsável pela geração e exportação de relatórios.",
+            modules=["src/exporters/", "src/generators/financial.ts", "src/api/reports.controller.ts"],
+        ),
+        ImpactedRepo(
+            name="finance-core",
+            confidence=88,
+            reasoning="Contém estruturas de dados financeiros e lógica de consolidação usadas em relatórios.",
+            modules=["src/ledger/", "src/calculations/balance.ts", "src/models/account.ts"],
+        ),
+        ImpactedRepo(
+            name="ui-dashboard",
+            confidence=82,
+            reasoning="Interface responsável por telas de relatórios, filtros e visualização de dados financeiros.",
+            modules=["src/pages/Reports.tsx", "src/components/Charts/", "src/components/Filters/"],
+        ),
+        ImpactedRepo(
+            name="analytics-service",
+            confidence=65,
+            reasoning="Pode ser necessário para agregação de dados consolidados antes da exportação.",
+            modules=["src/aggregators/", "src/processors/metrics.ts"],
+        ),
+    ],
+    recommendedPeople=[
+        RecommendedPerson(
+            name="Ana Silva",
+            relevance=95,
+            reasoning="Principal especialista em reports-service com 271 commits. Mexeu 14 vezes no módulo de exportação nos últimos 6 meses.",
+        ),
+        RecommendedPerson(
+            name="Marcos Oliveira",
+            relevance=92,
+            reasoning="Único especialista em finance-core, responsável por 75% das alterações. Conhecimento crítico sobre estruturas financeiras.",
+        ),
+        RecommendedPerson(
+            name="Clara Mendes",
+            relevance=85,
+            reasoning="Principal autora das últimas alterações em ui-dashboard. Especialista em componentes de visualização de dados.",
+        ),
+        RecommendedPerson(
+            name="Fernando Souza",
+            relevance=70,
+            reasoning="Especialista em analytics-service. Pode auxiliar na agregação de dados consolidados.",
+        ),
+    ],
+    risks=[
+        Risk(
+            type=RiskLevel.HIGH,
+            message="finance-core não recebe mudanças há 10 meses - risco de conhecimento obsoleto e possíveis incompatibilidades",
+        ),
+        Risk(
+            type=RiskLevel.HIGH,
+            message="Apenas Marcos Oliveira fez 75% das alterações no módulo ledger/ - concentração crítica de conhecimento",
+        ),
+        Risk(
+            type=RiskLevel.MEDIUM,
+            message="reports-service tem forte dependência histórica com analytics-service - mudanças podem impactar ambos",
+        ),
+        Risk(
+            type=RiskLevel.MEDIUM,
+            message="Módulo de exportação em reports-service é um hotspot com 124 alterações - área sensível a bugs",
+        ),
+        Risk(
+            type=RiskLevel.LOW,
+            message="ui-dashboard tem boa distribuição de conhecimento, mas componente FinancialChart.tsx é frequentemente modificado",
+        ),
+    ],
+    suggestedOrder=[
+        SuggestedStep(
+            step=1,
+            action="Revisão e atualização do modelo de dados financeiros",
+            repository="finance-core",
+            reasoning="Dependência ascendente - outros serviços dependem destas estruturas. Necessário garantir compatibilidade antes de prosseguir.",
+        ),
+        SuggestedStep(
+            step=2,
+            action="Implementar lógica de consolidação e agregação",
+            repository="analytics-service",
+            reasoning="Preparar dados consolidados que serão consumidos pelo serviço de relatórios.",
+        ),
+        SuggestedStep(
+            step=3,
+            action="Desenvolver nova funcionalidade de exportação consolidada",
+            repository="reports-service",
+            reasoning="Implementar a lógica principal de exportação usando dados consolidados.",
+        ),
+        SuggestedStep(
+            step=4,
+            action="Criar interface e componentes de visualização",
+            repository="ui-dashboard",
+            reasoning="Última camada - interface depende dos serviços backend estarem prontos.",
+        ),
+    ],
+    additionalRecommendations=[
+        "Criar documentação técnica do módulo ledger/ em finance-core antes de iniciar alterações",
+        "Realizar pair programming entre Ana Silva e Marcos Oliveira para transferência de conhecimento sobre finance-core",
+        "Considerar code review cruzado entre Fernando Souza e Ana Silva para reduzir concentração de conhecimento",
+        "Implementar testes de integração entre reports-service e analytics-service devido à forte dependência",
+        "Agendar sessão de alinhamento técnico com Clara Mendes antes de iniciar trabalho no frontend",
+    ],
+)
+
+
+def get_example_analysis() -> FeatureAnalysis:
+    """Return the static example analysis."""
+    return EXAMPLE_ANALYSIS
 
 
 if __name__ == "__main__":

@@ -142,3 +142,74 @@ class TestPeopleEndpoint:
         assert first_person["recentActivity"] == 47
         assert len(first_person["repositories"]) == 3
         assert first_person["repositories"][0]["name"] == "reports-service"
+
+
+@pytest.mark.integration
+class TestAnalysisEndpoint:
+    """Tests for POST /api/v1/analysis endpoint."""
+
+    def test_post_analysis_returns_feature_analysis(
+        self, client: TestClient, api_v1_prefix: str
+    ) -> None:
+        """Test POST /analysis returns a FeatureAnalysis."""
+        response = client.post(
+            f"{api_v1_prefix}/analysis",
+            json={"description": "Test feature description"},
+        )
+        assert response.status_code == 200
+        data = response.json()
+        assert "feature" in data
+        assert "impactedRepos" in data
+        assert "recommendedPeople" in data
+        assert "risks" in data
+        assert "suggestedOrder" in data
+        assert "additionalRecommendations" in data
+
+    def test_post_analysis_contains_expected_repos(
+        self, client: TestClient, api_v1_prefix: str
+    ) -> None:
+        """Test analysis response contains expected impacted repos."""
+        response = client.post(
+            f"{api_v1_prefix}/analysis",
+            json={"description": "Any feature"},
+        )
+        data = response.json()
+
+        # Should return static example analysis
+        repo_names = [r["name"] for r in data["impactedRepos"]]
+        assert "reports-service" in repo_names
+        assert "finance-core" in repo_names
+
+    def test_post_analysis_contains_recommended_people(
+        self, client: TestClient, api_v1_prefix: str
+    ) -> None:
+        """Test analysis response contains recommended people."""
+        response = client.post(
+            f"{api_v1_prefix}/analysis",
+            json={"description": "Any feature"},
+        )
+        data = response.json()
+
+        people_names = [p["name"] for p in data["recommendedPeople"]]
+        assert "Ana Silva" in people_names
+        assert "Marcos Oliveira" in people_names
+
+    def test_post_analysis_empty_description_returns_400(
+        self, client: TestClient, api_v1_prefix: str
+    ) -> None:
+        """Test empty description returns 400 error."""
+        response = client.post(
+            f"{api_v1_prefix}/analysis",
+            json={"description": ""},
+        )
+        assert response.status_code == 422  # Validation error
+
+    def test_post_analysis_whitespace_description_returns_400(
+        self, client: TestClient, api_v1_prefix: str
+    ) -> None:
+        """Test whitespace-only description returns 400 error."""
+        response = client.post(
+            f"{api_v1_prefix}/analysis",
+            json={"description": "   "},
+        )
+        assert response.status_code == 422  # Validation error

@@ -233,3 +233,92 @@ class TestPersonModel:
         data = person.model_dump()
         assert data["id"] == "1"
         assert data["email"] == "test@example.com"
+
+
+# FeatureAnalysis model tests - TDD: Will fail until T038-T039 implemented
+@pytest.mark.unit
+class TestFeatureAnalysisModel:
+    """Tests for FeatureAnalysis model validation."""
+
+    def test_feature_analysis_creation(self) -> None:
+        """Test creating a valid FeatureAnalysis."""
+        from nexus_api.models.analysis import (
+            FeatureAnalysis,
+            ImpactedRepo,
+            RecommendedPerson,
+            Risk,
+            RiskLevel,
+            SuggestedStep,
+        )
+
+        analysis = FeatureAnalysis(
+            feature="Test feature",
+            impactedRepos=[
+                ImpactedRepo(
+                    name="reports-service",
+                    confidence=95,
+                    reasoning="Test reasoning",
+                    modules=["src/api/"],
+                ),
+            ],
+            recommendedPeople=[
+                RecommendedPerson(
+                    name="Ana Silva",
+                    relevance=95,
+                    reasoning="Main expert",
+                ),
+            ],
+            risks=[
+                Risk(type=RiskLevel.HIGH, message="Critical risk"),
+            ],
+            suggestedOrder=[
+                SuggestedStep(
+                    step=1,
+                    action="Review code",
+                    repository="reports-service",
+                    reasoning="Start here",
+                ),
+            ],
+            additionalRecommendations=["Test recommendation"],
+        )
+        assert analysis.feature == "Test feature"
+        assert len(analysis.impactedRepos) == 1
+        assert len(analysis.recommendedPeople) == 1
+        assert len(analysis.risks) == 1
+        assert len(analysis.suggestedOrder) == 1
+
+    def test_risk_level_valid_values(self) -> None:
+        """Test RiskLevel enum has correct values."""
+        from nexus_api.models.analysis import RiskLevel
+
+        assert RiskLevel.HIGH.value == "high"
+        assert RiskLevel.MEDIUM.value == "medium"
+        assert RiskLevel.LOW.value == "low"
+
+    def test_impacted_repo_confidence_range(self) -> None:
+        """Test ImpactedRepo confidence must be 0-100."""
+        from nexus_api.models.analysis import ImpactedRepo
+
+        repo = ImpactedRepo(
+            name="test",
+            confidence=85,
+            reasoning="test",
+            modules=["src/"],
+        )
+        assert repo.confidence == 85
+
+    def test_feature_analysis_serialization(self) -> None:
+        """Test FeatureAnalysis model serializes correctly."""
+        from nexus_api.models.analysis import FeatureAnalysis
+
+        analysis = FeatureAnalysis(
+            feature="Test",
+            impactedRepos=[],
+            recommendedPeople=[],
+            risks=[],
+            suggestedOrder=[],
+            additionalRecommendations=[],
+        )
+        data = analysis.model_dump()
+        assert data["feature"] == "Test"
+        assert isinstance(data["impactedRepos"], list)
