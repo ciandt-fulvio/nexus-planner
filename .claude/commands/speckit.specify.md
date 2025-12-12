@@ -65,8 +65,39 @@ Given that feature description, do this:
    - If no existing branches/directories found with this short-name, start with number 1
    - You must only ever run this script once per feature
    - The JSON is provided in the terminal as output - always refer to it to get the actual content you're looking for
-   - The JSON output will contain BRANCH_NAME and SPEC_FILE paths
+   - The JSON output will contain BRANCH_NAME, SPEC_FILE paths, and potentially WORKTREE_PATH and WORKTREE_CREATED
    - For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot")
+
+   e. **Check if worktree was created** (parse JSON output from create-new-feature.sh):
+      - Extract BRANCH_NAME, SPEC_FILE, FEATURE_NUM, WORKTREE_PATH (if present), and WORKTREE_CREATED
+
+      **If WORKTREE_CREATED is true**:
+      1. The worktree was created at WORKTREE_PATH for parallel development
+      2. **STOP the workflow here** and inform the user:
+
+         ```
+         ✓ Worktree created for parallel development
+
+         Feature A (current): [current-branch] in [current-directory]
+         Feature B (new): [BRANCH_NAME] in [WORKTREE_PATH]
+
+         To continue with Feature B specification:
+         1. Open a new terminal or IDE window
+         2. cd [WORKTREE_PATH]
+         3. Run /speckit.specify "[original feature description]" again in that directory
+            OR manually edit: [WORKTREE_PATH]/specs/[BRANCH_NAME]/spec.md
+
+         Spec template has been created at the worktree location.
+         You can now work on both features in parallel without conflicts.
+         ```
+
+      3. **Do NOT continue with spec writing** in the current location
+      4. **Do NOT proceed to steps 3-7** in the current context
+      5. Exit the workflow and wait for user to switch to the worktree
+
+      **If WORKTREE_CREATED is false (or not present)**:
+      - Continue normally to step 3 below
+      - Spec will be created in the current directory
 
 3. Load `.specify/templates/spec-template.md` to understand required sections.
 

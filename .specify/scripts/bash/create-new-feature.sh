@@ -2,6 +2,41 @@
 
 set -e
 
+# Registra worktree no arquivo JSON
+register_worktree() {
+    local branch_name="$1"
+    local worktree_path="$2"
+    local feature_dir="$3"
+
+    local registry_file="$REPO_ROOT/.specify/memory/worktrees.json"
+    mkdir -p "$REPO_ROOT/.specify/memory"
+
+    # Criar arquivo JSON se não existir
+    if [ ! -f "$registry_file" ]; then
+        echo '{"worktrees":{}}' > "$registry_file"
+    fi
+
+    # Adicionar entrada (usando jq se disponível, senão fallback simples)
+    if command -v jq >/dev/null 2>&1; then
+        local timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+        local temp_file=$(mktemp)
+        jq --arg branch "$branch_name" \
+           --arg path "$worktree_path" \
+           --arg spec "$feature_dir" \
+           --arg created "$timestamp" \
+           '.worktrees[$branch] = {
+               "path": $path,
+               "spec": $spec,
+               "created": $created,
+               "status": "active"
+           }' "$registry_file" > "$temp_file"
+        mv "$temp_file" "$registry_file"
+    else
+        # Fallback: append simples (não ideal mas funcional)
+        >&2 echo "[specify] Warning: jq not found, worktree registry may be incomplete"
+    fi
+}
+
 JSON_MODE=false
 SHORT_NAME=""
 BRANCH_NUMBER=""
@@ -160,6 +195,9 @@ clean_branch_name() {
 # were initialised with --no-git.
 SCRIPT_DIR="$(CDPATH="" cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
+# Source common functions to get worktree detection
+source "$SCRIPT_DIR/common.sh"
+
 if git rev-parse --show-toplevel >/dev/null 2>&1; then
     REPO_ROOT=$(git rev-parse --show-toplevel)
     HAS_GIT=true
@@ -170,6 +208,17 @@ else
         exit 1
     fi
     HAS_GIT=false
+fi
+
+# Detectar se já estamos em feature branch (para criar worktree)
+SHOULD_CREATE_WORKTREE=false
+if [ "$HAS_GIT" = true ]; then
+    CURRENT_BRANCH=$(get_current_branch)
+    if [[ "$CURRENT_BRANCH" =~ ^[0-9]{3}- ]]; then
+        SHOULD_CREATE_WORKTREE=true
+        >&2 echo "[specify] Detected feature branch: $CURRENT_BRANCH"
+        >&2 echo "[specify] Will create worktree for new feature to enable parallel work"
+    fi
 fi
 
 cd "$REPO_ROOT"
@@ -271,13 +320,49 @@ if [ ${#BRANCH_NAME} -gt $MAX_BRANCH_LENGTH ]; then
     >&2 echo "[specify] Truncated to: $BRANCH_NAME (${#BRANCH_NAME} bytes)"
 fi
 
+WORKTREE_CREATED=false
+WORKTREE_PATH=""
+
 if [ "$HAS_GIT" = true ]; then
-    git checkout -b "$BRANCH_NAME"
+    if [ "$SHOULD_CREATE_WORKTREE" = true ]; then
+        # Criar worktree em vez de branch local
+        WORKTREE_PATH=$(get_worktree_path_for_branch "$BRANCH_NAME")
+
+        >&2 echo "[specify] Creating worktree at: $WORKTREE_PATH"
+
+        # Criar worktree baseado em main
+        # IMPORTANTE: Inicia do main para garantir specs anteriores estão presentes
+        git worktree add -b "$BRANCH_NAME" "$WORKTREE_PATH" main
+
+        # Atualizar FEATURE_DIR para apontar para dentro do worktree
+        FEATURE_DIR="$WORKTREE_PATH/specs/$BRANCH_NAME"
+
+        # Registrar worktree no arquivo JSON
+        register_worktree "$BRANCH_NAME" "$WORKTREE_PATH" "$FEATURE_DIR"
+
+        # Informar ao usuário
+        >&2 echo "[specify] ✓ Worktree created successfully"
+        >&2 echo "[specify] Feature A: $CURRENT_BRANCH (in $(pwd))"
+        >&2 echo "[specify] Feature B: $BRANCH_NAME (in $WORKTREE_PATH)"
+        >&2 echo ""
+        >&2 echo "[specify] Next steps:"
+        >&2 echo "[specify]   1. Switch to worktree: cd $WORKTREE_PATH"
+        >&2 echo "[specify]   2. Continue with /speckit.specify to create spec"
+        >&2 echo ""
+        >&2 echo "[specify] Note: Spec will be created at $FEATURE_DIR (inside worktree)"
+
+        # Não mudar de diretório - deixar usuário decidir
+        WORKTREE_CREATED=true
+    else
+        # Fluxo normal: criar branch local
+        git checkout -b "$BRANCH_NAME"
+        FEATURE_DIR="$SPECS_DIR/$BRANCH_NAME"
+    fi
 else
     >&2 echo "[specify] Warning: Git repository not detected; skipped branch creation for $BRANCH_NAME"
+    FEATURE_DIR="$SPECS_DIR/$BRANCH_NAME"
 fi
 
-FEATURE_DIR="$SPECS_DIR/$BRANCH_NAME"
 mkdir -p "$FEATURE_DIR"
 
 TEMPLATE="$REPO_ROOT/.specify/templates/spec-template.md"
@@ -288,10 +373,20 @@ if [ -f "$TEMPLATE" ]; then cp "$TEMPLATE" "$SPEC_FILE"; else touch "$SPEC_FILE"
 export SPECIFY_FEATURE="$BRANCH_NAME"
 
 if $JSON_MODE; then
-    printf '{"BRANCH_NAME":"%s","SPEC_FILE":"%s","FEATURE_NUM":"%s"}\n' "$BRANCH_NAME" "$SPEC_FILE" "$FEATURE_NUM"
+    if [ "$WORKTREE_CREATED" = true ]; then
+        printf '{"BRANCH_NAME":"%s","SPEC_FILE":"%s","FEATURE_NUM":"%s","WORKTREE_PATH":"%s","WORKTREE_CREATED":true}\n' \
+            "$BRANCH_NAME" "$SPEC_FILE" "$FEATURE_NUM" "$WORKTREE_PATH"
+    else
+        printf '{"BRANCH_NAME":"%s","SPEC_FILE":"%s","FEATURE_NUM":"%s","WORKTREE_CREATED":false}\n' \
+            "$BRANCH_NAME" "$SPEC_FILE" "$FEATURE_NUM"
+    fi
 else
     echo "BRANCH_NAME: $BRANCH_NAME"
     echo "SPEC_FILE: $SPEC_FILE"
     echo "FEATURE_NUM: $FEATURE_NUM"
+    if [ "$WORKTREE_CREATED" = true ]; then
+        echo "WORKTREE_PATH: $WORKTREE_PATH"
+        echo "WORKTREE_CREATED: true"
+    fi
     echo "SPECIFY_FEATURE environment variable set to: $BRANCH_NAME"
 fi

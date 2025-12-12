@@ -1,0 +1,5 @@
+{
+  "worktrees": {},
+  "version": "1.0",
+  "description": "Tracks Git worktrees created by Spec-Kit for parallel feature development"
+}

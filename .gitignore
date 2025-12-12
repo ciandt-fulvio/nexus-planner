@@ -55,3 +55,6 @@ coverage/
 *.tmp
 *.temp
 .cache/
+
+# Spec-Kit worktree registry (local state)
+.specify/memory/worktrees.json

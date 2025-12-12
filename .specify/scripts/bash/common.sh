@@ -62,6 +62,45 @@ has_git() {
     git rev-parse --show-toplevel >/dev/null 2>&1
 }
 
+# Detecta se estamos em uma feature branch (NNN-*)
+is_in_feature_branch() {
+    local current_branch=$(get_current_branch)
+    if [[ "$current_branch" =~ ^[0-9]{3}- ]]; then
+        return 0  # Sim, estamos em feature branch
+    fi
+    return 1  # Não, estamos em main/develop/etc
+}
+
+# Detecta se o diretório atual é um worktree
+is_in_worktree() {
+    if ! has_git; then
+        return 1
+    fi
+
+    # Git worktrees têm .git como arquivo, não diretório
+    if [[ -f .git ]]; then
+        return 0  # É worktree
+    fi
+    return 1  # É repo principal
+}
+
+# Retorna path do arquivo de registro de worktrees
+get_worktree_registry_path() {
+    local repo_root=$(get_repo_root)
+    echo "$repo_root/.specify/memory/worktrees.json"
+}
+
+# Gera path para novo worktree baseado no nome da branch
+# Exemplo: ~/nexus-planner + 002-payment → ~/nexus-planner--002-payment
+get_worktree_path_for_branch() {
+    local branch_name="$1"
+    local repo_root=$(get_repo_root)
+    local repo_name=$(basename "$repo_root")
+    local parent_dir=$(dirname "$repo_root")
+
+    echo "$parent_dir/${repo_name}--${branch_name}"
+}
+
 check_feature_branch() {
     local branch="$1"
     local has_git_repo="$2"

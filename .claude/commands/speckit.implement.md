@@ -132,4 +132,99 @@ You **MUST** consider the user input before proceeding (if not empty).
    - Confirm the implementation follows the technical plan
    - Report final status with summary of completed work
 
+10. **Worktree Merge e Cleanup (Automático)**:
+
+    a. **Detect if we're in a worktree**:
+       ```bash
+       # Check if .git is a file (worktree) vs directory (main repo)
+       if [ -f .git ]; then
+           IS_WORKTREE=true
+       else
+           IS_WORKTREE=false
+       fi
+       ```
+
+    b. **If IS_WORKTREE is true** (we're in a worktree, proceed with automatic merge and cleanup):
+
+       i. Ensure all changes are committed:
+          ```bash
+          if [ -n "$(git status --porcelain)" ]; then
+              echo "ERROR: Uncommitted changes detected. Please commit or stash first." >&2
+              exit 1
+          fi
+          ```
+
+       ii. Get current worktree info:
+           ```bash
+           WORKTREE_PATH=$(pwd)
+           FEATURE_BRANCH=$(git branch --show-current)
+           REPO_ROOT=$(git rev-parse --show-toplevel)
+           # Main repo path: remove --NNN-feature suffix
+           MAIN_REPO=$(echo "$WORKTREE_PATH" | sed 's/--[0-9]\{3\}-.*//')
+           ```
+
+       iii. Switch to main branch in main repo:
+            ```bash
+            cd "$MAIN_REPO"
+            git checkout main
+            ```
+
+       iv. Merge feature branch to main (automatic):
+           ```bash
+           echo "Merging $FEATURE_BRANCH into main..."
+           git merge "$FEATURE_BRANCH" --no-ff -m "feat: merge $FEATURE_BRANCH"
+
+           # If merge fails (conflicts), abort and inform user
+           if [ $? -ne 0 ]; then
+               git merge --abort
+               echo "ERROR: Merge conflicts detected. Please resolve manually:" >&2
+               echo "  1. cd $MAIN_REPO" >&2
+               echo "  2. git merge $FEATURE_BRANCH" >&2
+               echo "  3. Resolve conflicts" >&2
+               echo "  4. git worktree remove $WORKTREE_PATH" >&2
+               exit 1
+           fi
+           ```
+
+       v. Remove worktree (automatic):
+          ```bash
+          echo "Removing worktree: $WORKTREE_PATH"
+          git worktree remove "$WORKTREE_PATH"
+          ```
+
+       vi. Update worktree registry (mark as merged):
+           ```bash
+           # Update .specify/memory/worktrees.json
+           REGISTRY="$MAIN_REPO/.specify/memory/worktrees.json"
+           if [ -f "$REGISTRY" ] && command -v jq >/dev/null 2>&1; then
+               TIMESTAMP=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
+               TEMP_FILE=$(mktemp)
+               jq --arg branch "$FEATURE_BRANCH" \
+                  --arg merged "$TIMESTAMP" \
+                  '.worktrees[$branch].status = "merged" |
+                   .worktrees[$branch].merged_at = $merged' \
+                  "$REGISTRY" > "$TEMP_FILE"
+               mv "$TEMP_FILE" "$REGISTRY"
+           fi
+           ```
+
+       vii. Prune stale worktree metadata:
+            ```bash
+            git worktree prune
+            ```
+
+       viii. Inform user of completion:
+             ```bash
+             echo "✓ Implementation complete"
+             echo "✓ Merged $FEATURE_BRANCH → main"
+             echo "✓ Removed worktree: $WORKTREE_PATH"
+             echo ""
+             echo "You are now in: $MAIN_REPO (main branch)"
+             ```
+
+    c. **If IS_WORKTREE is false** (normal branch workflow):
+       - Skip worktree cleanup (working in main repo)
+       - User can manually create PR if desired
+       - Inform: "Implementation complete. Create PR manually if needed."
+
 Note: This command assumes a complete task breakdown exists in tasks.md. If tasks are incomplete or missing, suggest running `/speckit.tasks` first to regenerate the task list.
