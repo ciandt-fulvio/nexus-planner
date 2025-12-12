@@ -81,3 +81,64 @@ class TestRepositoriesEndpoint:
         assert first_repo["knowledgeConcentration"] == 45
         assert len(first_repo["topContributors"]) == 3
         assert first_repo["topContributors"][0]["name"] == "Ana Silva"
+
+
+@pytest.mark.integration
+class TestPeopleEndpoint:
+    """Tests for GET /api/v1/people endpoint."""
+
+    def test_get_people_returns_list(self, client: TestClient, api_v1_prefix: str) -> None:
+        """Test GET /people returns a list of people."""
+        response = client.get(f"{api_v1_prefix}/people")
+        assert response.status_code == 200
+        data = response.json()
+        assert isinstance(data, list)
+
+    def test_get_people_returns_five_people(
+        self, client: TestClient, api_v1_prefix: str
+    ) -> None:
+        """Test GET /people returns exactly 5 people."""
+        response = client.get(f"{api_v1_prefix}/people")
+        assert response.status_code == 200
+        data = response.json()
+        assert len(data) == 5
+
+    def test_get_people_contains_required_fields(
+        self, client: TestClient, api_v1_prefix: str
+    ) -> None:
+        """Test each person has all required fields."""
+        response = client.get(f"{api_v1_prefix}/people")
+        assert response.status_code == 200
+        data = response.json()
+
+        required_fields = [
+            "id",
+            "name",
+            "email",
+            "avatar",
+            "repositories",
+            "technologies",
+            "domains",
+            "recentActivity",
+            "alerts",
+        ]
+
+        for person in data:
+            for field in required_fields:
+                assert field in person, f"Missing field: {field}"
+
+    def test_get_people_first_person_is_ana_silva(
+        self, client: TestClient, api_v1_prefix: str
+    ) -> None:
+        """Test first person is Ana Silva with correct data."""
+        response = client.get(f"{api_v1_prefix}/people")
+        data = response.json()
+
+        first_person = data[0]
+        assert first_person["id"] == "1"
+        assert first_person["name"] == "Ana Silva"
+        assert first_person["email"] == "ana.silva@company.com"
+        assert first_person["avatar"] == "AS"
+        assert first_person["recentActivity"] == 47
+        assert len(first_person["repositories"]) == 3
+        assert first_person["repositories"][0]["name"] == "reports-service"

@@ -153,3 +153,83 @@ class TestRepositoryModel:
         data = repo.model_dump()
         assert data["id"] == "1"
         assert data["activity"] == "stale"
+
+
+# Person model tests - TDD: Will fail until T026-T027 implemented
+@pytest.mark.unit
+class TestPersonModel:
+    """Tests for Person model validation."""
+
+    def test_person_creation(self) -> None:
+        """Test creating a valid Person."""
+        from nexus_api.models.person import (
+            Person,
+            PersonRepository,
+            Technology,
+        )
+
+        person = Person(
+            id="1",
+            name="Ana Silva",
+            email="ana.silva@company.com",
+            avatar="AS",
+            repositories=[
+                PersonRepository(
+                    name="reports-service",
+                    commits=271,
+                    lastActivity="2024-01-15",
+                    expertise=95,
+                ),
+            ],
+            technologies=[
+                Technology(name="TypeScript", level=95),
+            ],
+            domains=["Relatórios", "APIs REST"],
+            recentActivity=47,
+            alerts=[
+                Alert(type=AlertType.INFO, message="Principal especialista"),
+            ],
+        )
+        assert person.id == "1"
+        assert person.name == "Ana Silva"
+        assert person.email == "ana.silva@company.com"
+        assert len(person.repositories) == 1
+        assert len(person.technologies) == 1
+
+    def test_person_repository_expertise_range(self) -> None:
+        """Test PersonRepository expertise must be 0-100."""
+        from nexus_api.models.person import PersonRepository
+
+        repo = PersonRepository(
+            name="test-repo",
+            commits=100,
+            lastActivity="2024-01-01",
+            expertise=85,
+        )
+        assert repo.expertise == 85
+
+    def test_technology_level_range(self) -> None:
+        """Test Technology level must be 0-100."""
+        from nexus_api.models.person import Technology
+
+        tech = Technology(name="Python", level=90)
+        assert tech.level == 90
+
+    def test_person_serialization(self) -> None:
+        """Test Person model serializes to dict correctly."""
+        from nexus_api.models.person import Person
+
+        person = Person(
+            id="1",
+            name="Test",
+            email="test@example.com",
+            avatar="TE",
+            repositories=[],
+            technologies=[],
+            domains=[],
+            recentActivity=0,
+            alerts=[],
+        )
+        data = person.model_dump()
+        assert data["id"] == "1"
+        assert data["email"] == "test@example.com"

@@ -9,6 +9,7 @@ Expected output: Lists of Repository, Person, and FeatureAnalysis data
 """
 
 from nexus_api.models import Alert, AlertType
+from nexus_api.models.person import Person, PersonRepository, Technology
 from nexus_api.models.repository import (
     ActivityLevel,
     Hotspot,
@@ -190,6 +191,140 @@ def get_repository_by_id(repo_id: str) -> Repository | None:
     for repo in REPOSITORIES:
         if repo.id == repo_id:
             return repo
+    return None
+
+
+# People mocked data - exactly matches frontend/src/data/mockData.ts
+PEOPLE: list[Person] = [
+    Person(
+        id="1",
+        name="Ana Silva",
+        email="ana.silva@company.com",
+        avatar="AS",
+        repositories=[
+            PersonRepository(name="reports-service", commits=271, lastActivity="2024-01-15", expertise=95),
+            PersonRepository(name="ui-dashboard", commits=89, lastActivity="2024-01-12", expertise=65),
+            PersonRepository(name="analytics-service", commits=34, lastActivity="2023-12-20", expertise=40),
+        ],
+        technologies=[
+            Technology(name="TypeScript", level=95),
+            Technology(name="Node.js", level=90),
+            Technology(name="React", level=75),
+            Technology(name="PostgreSQL", level=70),
+        ],
+        domains=["Relatórios", "Exportação de Dados", "APIs REST"],
+        recentActivity=47,
+        alerts=[
+            Alert(type=AlertType.INFO, message="Principal especialista em reports-service com 271 commits"),
+            Alert(type=AlertType.WARNING, message="Conhecimento concentrado em poucos repositórios - considerar diversificação"),
+        ],
+    ),
+    Person(
+        id="2",
+        name="Marcos Oliveira",
+        email="marcos.oliveira@company.com",
+        avatar="MO",
+        repositories=[
+            PersonRepository(name="finance-core", commits=932, lastActivity="2023-03-22", expertise=98),
+            PersonRepository(name="database-layer", commits=156, lastActivity="2023-04-10", expertise=75),
+            PersonRepository(name="reports-service", commits=45, lastActivity="2023-02-15", expertise=35),
+        ],
+        technologies=[
+            Technology(name="Java", level=98),
+            Technology(name="Spring Boot", level=95),
+            Technology(name="SQL", level=92),
+            Technology(name="Contabilidade", level=88),
+        ],
+        domains=["Finanças", "Contabilidade", "Transações", "Ledger"],
+        recentActivity=0,
+        alerts=[
+            Alert(type=AlertType.DANGER, message="Único especialista em finance-core - risco crítico de concentração"),
+            Alert(type=AlertType.DANGER, message="Sem atividade há 10 meses - conhecimento pode estar desatualizado"),
+            Alert(type=AlertType.WARNING, message="Responsável por 75% das alterações em finance-core"),
+        ],
+    ),
+    Person(
+        id="3",
+        name="Clara Mendes",
+        email="clara.mendes@company.com",
+        avatar="CM",
+        repositories=[
+            PersonRepository(name="ui-dashboard", commits=819, lastActivity="2024-01-18", expertise=96),
+            PersonRepository(name="design-system", commits=234, lastActivity="2024-01-16", expertise=85),
+            PersonRepository(name="reports-service", commits=67, lastActivity="2024-01-10", expertise=45),
+        ],
+        technologies=[
+            Technology(name="React", level=98),
+            Technology(name="TypeScript", level=95),
+            Technology(name="CSS/Tailwind", level=92),
+            Technology(name="UX/UI", level=88),
+        ],
+        domains=["Interface", "Componentes", "Visualização de Dados", "UX"],
+        recentActivity=52,
+        alerts=[
+            Alert(type=AlertType.INFO, message="Principal desenvolvedora frontend com alta atividade recente"),
+            Alert(type=AlertType.INFO, message="Boa distribuição entre ui-dashboard e design-system"),
+        ],
+    ),
+    Person(
+        id="4",
+        name="Fernando Souza",
+        email="fernando.souza@company.com",
+        avatar="FS",
+        repositories=[
+            PersonRepository(name="analytics-service", commits=330, lastActivity="2024-01-10", expertise=92),
+            PersonRepository(name="data-pipeline", commits=178, lastActivity="2024-01-08", expertise=80),
+            PersonRepository(name="reports-service", commits=89, lastActivity="2023-12-28", expertise=55),
+        ],
+        technologies=[
+            Technology(name="Python", level=95),
+            Technology(name="Node.js", level=85),
+            Technology(name="Data Analysis", level=92),
+            Technology(name="SQL", level=88),
+        ],
+        domains=["Analytics", "Processamento de Dados", "Métricas", "ETL"],
+        recentActivity=28,
+        alerts=[
+            Alert(type=AlertType.WARNING, message="Responsável por 52% das alterações em analytics-service"),
+            Alert(type=AlertType.INFO, message="Especialista em processamento e análise de dados"),
+        ],
+    ),
+    Person(
+        id="5",
+        name="Diego Ferreira",
+        email="diego.ferreira@company.com",
+        avatar="DF",
+        repositories=[
+            PersonRepository(name="ui-dashboard", commits=517, lastActivity="2024-01-17", expertise=88),
+            PersonRepository(name="mobile-app", commits=298, lastActivity="2024-01-14", expertise=82),
+            PersonRepository(name="auth-service", commits=45, lastActivity="2023-11-20", expertise=40),
+        ],
+        technologies=[
+            Technology(name="React", level=90),
+            Technology(name="React Native", level=88),
+            Technology(name="TypeScript", level=85),
+            Technology(name="GraphQL", level=75),
+        ],
+        domains=["Frontend", "Mobile", "Componentes", "State Management"],
+        recentActivity=41,
+        alerts=[
+            Alert(type=AlertType.INFO, message="Forte atuação em frontend web e mobile"),
+            Alert(type=AlertType.INFO, message="Bom complemento de conhecimento com Clara Mendes"),
+        ],
+    ),
+]
+
+
+def get_all_people() -> list[Person]:
+    """Return all mocked people."""
+    return PEOPLE
+
+
+def get_person_by_id(person_id: str) -> Person | None:
+    """Return a person by ID, or None if not found."""
+    for person in PEOPLE:
+        if person.id == person_id:
+            return person
     return None
 
 

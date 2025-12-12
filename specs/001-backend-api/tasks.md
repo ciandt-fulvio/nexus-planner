@@ -90,23 +90,23 @@
 
 ### Tests for User Story 2 (TDD Required)
 
-- [ ] T024 [P] [US2] Write unit test for Person model validation in backend/tests/unit/test_models.py
-- [ ] T025 [P] [US2] Write integration test for GET /people endpoint in backend/tests/integration/test_api.py
+- [x] T024 [P] [US2] Write unit test for Person model validation in backend/tests/unit/test_models.py
+- [x] T025 [P] [US2] Write integration test for GET /people endpoint in backend/tests/integration/test_api.py
 
 ### Implementation for User Story 2
 
-- [ ] T026 [P] [US2] Create PersonRepository, Technology models in backend/src/nexus_api/models/person.py
-- [ ] T027 [US2] Create Person model with all fields in backend/src/nexus_api/models/person.py
-- [ ] T028 [US2] Create people mocked data (5 people) in backend/src/nexus_api/data/mock_data.py
-- [ ] T029 [US2] Create people router with GET /people in backend/src/nexus_api/routers/people.py
-- [ ] T030 [US2] Register people router in main.py
-- [ ] T031 [US2] Add validation block to person.py module
-- [ ] T032 [US2] Verify T024, T025 tests now pass
+- [x] T026 [P] [US2] Create PersonRepository, Technology models in backend/src/nexus_api/models/person.py
+- [x] T027 [US2] Create Person model with all fields in backend/src/nexus_api/models/person.py
+- [x] T028 [US2] Create people mocked data (5 people) in backend/src/nexus_api/data/mock_data.py
+- [x] T029 [US2] Create people router with GET /people in backend/src/nexus_api/routers/people.py
+- [x] T030 [US2] Register people router in main.py
+- [x] T031 [US2] Add validation block to person.py module
+- [x] T032 [US2] Verify T024, T025 tests now pass
 
 ### Frontend Service for User Story 2
 
-- [ ] T033 [P] [US2] Create usePeople hook in frontend/src/services/people.ts
-- [ ] T034 [US2] Export Person types from frontend/src/services/people.ts
+- [x] T033 [P] [US2] Create usePeople hook in frontend/src/services/people.ts
+- [x] T034 [US2] Export Person types from frontend/src/services/people.ts
 
 **Checkpoint**: People list endpoint functional, frontend hook ready
 
