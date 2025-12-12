@@ -60,23 +60,23 @@
 
 > **Write these tests FIRST, ensure they FAIL before implementation**
 
-- [ ] T013 [P] [US1] Write unit test for Repository model validation in backend/tests/unit/test_models.py
-- [ ] T014 [P] [US1] Write integration test for GET /repositories endpoint in backend/tests/integration/test_api.py
+- [x] T013 [P] [US1] Write unit test for Repository model validation in backend/tests/unit/test_models.py
+- [x] T014 [P] [US1] Write integration test for GET /repositories endpoint in backend/tests/integration/test_api.py
 
 ### Implementation for User Story 1
 
-- [ ] T015 [P] [US1] Create ActivityLevel, TopContributor, Hotspot models in backend/src/nexus_api/models/repository.py
-- [ ] T016 [US1] Create Repository model with all fields in backend/src/nexus_api/models/repository.py
-- [ ] T017 [US1] Create repositories mocked data (5 repos) in backend/src/nexus_api/data/mock_data.py
-- [ ] T018 [US1] Create repositories router with GET /repositories in backend/src/nexus_api/routers/repositories.py
-- [ ] T019 [US1] Register repositories router in main.py with /api/v1 prefix
-- [ ] T020 [US1] Add validation block to repository.py module
-- [ ] T021 [US1] Verify T013, T014 tests now pass
+- [x] T015 [P] [US1] Create ActivityLevel, TopContributor, Hotspot models in backend/src/nexus_api/models/repository.py
+- [x] T016 [US1] Create Repository model with all fields in backend/src/nexus_api/models/repository.py
+- [x] T017 [US1] Create repositories mocked data (5 repos) in backend/src/nexus_api/data/mock_data.py
+- [x] T018 [US1] Create repositories router with GET /repositories in backend/src/nexus_api/routers/repositories.py
+- [x] T019 [US1] Register repositories router in main.py with /api/v1 prefix
+- [x] T020 [US1] Add validation block to repository.py module
+- [x] T021 [US1] Verify T013, T014 tests now pass
 
 ### Frontend Service for User Story 1
 
-- [ ] T022 [P] [US1] Create useRepositories hook in frontend/src/services/repositories.ts
-- [ ] T023 [US1] Export Repository types from frontend/src/services/repositories.ts
+- [x] T022 [P] [US1] Create useRepositories hook in frontend/src/services/repositories.ts
+- [x] T023 [US1] Export Repository types from frontend/src/services/repositories.ts
 
 **Checkpoint**: Repository list endpoint functional, frontend hook ready
 

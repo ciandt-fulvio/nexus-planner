@@ -12,6 +12,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
 from nexus_api.config import settings
+from nexus_api.routers import repositories
 
 # Configure loguru
 logger.add(
@@ -37,6 +38,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# Include routers
+app.include_router(repositories.router, prefix=settings.api_v1_prefix)
 
 
 @app.get("/health")
