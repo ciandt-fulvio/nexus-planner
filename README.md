@@ -25,28 +25,18 @@ Nexus Planner is a tool designed to help development teams and product managers 
 
 1.  **Initialize Backend Project and Install Dependencies**
     ```bash
-    cd backend
-    uv init
-    uv add fastapi uvicorn pydantic pydantic-settings loguru
-    uv add --dev pytest pytest-cov httpx mypy ruff
+    cd backend && uv sync
     ```
 
-2.  **Create Environment File**
+2.  **Configure Environment Variables**
 
-    ```bash
-    cat <<EOF > .env
-    # Server Configuration
-    HOST=0.0.0.0
-    PORT=8000
-    DEBUG=true
+    Create a `.env` file in the `backend` directory. Copy the relevant backend configuration from the project's root `.env.example` file.
 
-    # CORS Configuration
-    CORS_ORIGINS=http://localhost:8080
-
-    # API Configuration
-    API_V1_PREFIX=/api/v1
-    EOF
     ```
+    cp ../.env.example .env
+    ```
+    Ajuste the variables in `backend/.env` as needed.
+<br>
 
 3.  **Run the Backend Server**
     ```bash
@@ -57,13 +47,15 @@ Nexus Planner is a tool designed to help development teams and product managers 
 
 ### Frontend Setup
 
-1.  **Create Environment File**
+1.  **Configure Environment Variables**
 
-    Create a file named `.env` in the `frontend` directory with the following content:
+    Create a `.env` file in the `frontend` directory. Copy the relevant frontend configuration from the project's root `.env.example` file.
 
-    ```env
-    VITE_API_URL=http://localhost:8000/api/v1
     ```
+    cp ../.env.example .env
+    ```
+    Ajuste the variables in `frontend/.env` as needed.
+<br>
 
 2.  **Install Dependencies**
     ```bash
