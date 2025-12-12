@@ -57,9 +57,7 @@ if __name__ == "__main__":
                 f"Default host: Expected '0.0.0.0', got '{test_settings.host}'"
             )
         if test_settings.port != 8000:
-            all_validation_failures.append(
-                f"Default port: Expected 8000, got {test_settings.port}"
-            )
+            all_validation_failures.append(f"Default port: Expected 8000, got {test_settings.port}")
     except Exception as e:
         all_validation_failures.append(f"Settings load failed: {e}")
 
@@ -88,7 +86,9 @@ if __name__ == "__main__":
 
     # Final validation result
     if all_validation_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(
+            f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:"
+        )
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)

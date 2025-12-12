@@ -210,9 +210,15 @@ PEOPLE: list[Person] = [
         email="ana.silva@company.com",
         avatar="AS",
         repositories=[
-            PersonRepository(name="reports-service", commits=271, lastActivity="2024-01-15", expertise=95),
-            PersonRepository(name="ui-dashboard", commits=89, lastActivity="2024-01-12", expertise=65),
-            PersonRepository(name="analytics-service", commits=34, lastActivity="2023-12-20", expertise=40),
+            PersonRepository(
+                name="reports-service", commits=271, lastActivity="2024-01-15", expertise=95
+            ),
+            PersonRepository(
+                name="ui-dashboard", commits=89, lastActivity="2024-01-12", expertise=65
+            ),
+            PersonRepository(
+                name="analytics-service", commits=34, lastActivity="2023-12-20", expertise=40
+            ),
         ],
         technologies=[
             Technology(name="TypeScript", level=95),
@@ -223,8 +229,14 @@ PEOPLE: list[Person] = [
         domains=["Relatórios", "Exportação de Dados", "APIs REST"],
         recentActivity=47,
         alerts=[
-            Alert(type=AlertType.INFO, message="Principal especialista em reports-service com 271 commits"),
-            Alert(type=AlertType.WARNING, message="Conhecimento concentrado em poucos repositórios - considerar diversificação"),
+            Alert(
+                type=AlertType.INFO,
+                message="Principal especialista em reports-service com 271 commits",
+            ),
+            Alert(
+                type=AlertType.WARNING,
+                message="Conhecimento concentrado em poucos repositórios - considerar diversificação",
+            ),
         ],
     ),
     Person(
@@ -233,9 +245,15 @@ PEOPLE: list[Person] = [
         email="marcos.oliveira@company.com",
         avatar="MO",
         repositories=[
-            PersonRepository(name="finance-core", commits=932, lastActivity="2023-03-22", expertise=98),
-            PersonRepository(name="database-layer", commits=156, lastActivity="2023-04-10", expertise=75),
-            PersonRepository(name="reports-service", commits=45, lastActivity="2023-02-15", expertise=35),
+            PersonRepository(
+                name="finance-core", commits=932, lastActivity="2023-03-22", expertise=98
+            ),
+            PersonRepository(
+                name="database-layer", commits=156, lastActivity="2023-04-10", expertise=75
+            ),
+            PersonRepository(
+                name="reports-service", commits=45, lastActivity="2023-02-15", expertise=35
+            ),
         ],
         technologies=[
             Technology(name="Java", level=98),
@@ -246,9 +264,17 @@ PEOPLE: list[Person] = [
         domains=["Finanças", "Contabilidade", "Transações", "Ledger"],
         recentActivity=0,
         alerts=[
-            Alert(type=AlertType.DANGER, message="Único especialista em finance-core - risco crítico de concentração"),
-            Alert(type=AlertType.DANGER, message="Sem atividade há 10 meses - conhecimento pode estar desatualizado"),
-            Alert(type=AlertType.WARNING, message="Responsável por 75% das alterações em finance-core"),
+            Alert(
+                type=AlertType.DANGER,
+                message="Único especialista em finance-core - risco crítico de concentração",
+            ),
+            Alert(
+                type=AlertType.DANGER,
+                message="Sem atividade há 10 meses - conhecimento pode estar desatualizado",
+            ),
+            Alert(
+                type=AlertType.WARNING, message="Responsável por 75% das alterações em finance-core"
+            ),
         ],
     ),
     Person(
@@ -257,9 +283,15 @@ PEOPLE: list[Person] = [
         email="clara.mendes@company.com",
         avatar="CM",
         repositories=[
-            PersonRepository(name="ui-dashboard", commits=819, lastActivity="2024-01-18", expertise=96),
-            PersonRepository(name="design-system", commits=234, lastActivity="2024-01-16", expertise=85),
-            PersonRepository(name="reports-service", commits=67, lastActivity="2024-01-10", expertise=45),
+            PersonRepository(
+                name="ui-dashboard", commits=819, lastActivity="2024-01-18", expertise=96
+            ),
+            PersonRepository(
+                name="design-system", commits=234, lastActivity="2024-01-16", expertise=85
+            ),
+            PersonRepository(
+                name="reports-service", commits=67, lastActivity="2024-01-10", expertise=45
+            ),
         ],
         technologies=[
             Technology(name="React", level=98),
@@ -270,8 +302,13 @@ PEOPLE: list[Person] = [
         domains=["Interface", "Componentes", "Visualização de Dados", "UX"],
         recentActivity=52,
         alerts=[
-            Alert(type=AlertType.INFO, message="Principal desenvolvedora frontend com alta atividade recente"),
-            Alert(type=AlertType.INFO, message="Boa distribuição entre ui-dashboard e design-system"),
+            Alert(
+                type=AlertType.INFO,
+                message="Principal desenvolvedora frontend com alta atividade recente",
+            ),
+            Alert(
+                type=AlertType.INFO, message="Boa distribuição entre ui-dashboard e design-system"
+            ),
         ],
     ),
     Person(
@@ -280,9 +317,15 @@ PEOPLE: list[Person] = [
         email="fernando.souza@company.com",
         avatar="FS",
         repositories=[
-            PersonRepository(name="analytics-service", commits=330, lastActivity="2024-01-10", expertise=92),
-            PersonRepository(name="data-pipeline", commits=178, lastActivity="2024-01-08", expertise=80),
-            PersonRepository(name="reports-service", commits=89, lastActivity="2023-12-28", expertise=55),
+            PersonRepository(
+                name="analytics-service", commits=330, lastActivity="2024-01-10", expertise=92
+            ),
+            PersonRepository(
+                name="data-pipeline", commits=178, lastActivity="2024-01-08", expertise=80
+            ),
+            PersonRepository(
+                name="reports-service", commits=89, lastActivity="2023-12-28", expertise=55
+            ),
         ],
         technologies=[
             Technology(name="Python", level=95),
@@ -293,7 +336,10 @@ PEOPLE: list[Person] = [
         domains=["Analytics", "Processamento de Dados", "Métricas", "ETL"],
         recentActivity=28,
         alerts=[
-            Alert(type=AlertType.WARNING, message="Responsável por 52% das alterações em analytics-service"),
+            Alert(
+                type=AlertType.WARNING,
+                message="Responsável por 52% das alterações em analytics-service",
+            ),
             Alert(type=AlertType.INFO, message="Especialista em processamento e análise de dados"),
         ],
     ),
@@ -303,9 +349,15 @@ PEOPLE: list[Person] = [
         email="diego.ferreira@company.com",
         avatar="DF",
         repositories=[
-            PersonRepository(name="ui-dashboard", commits=517, lastActivity="2024-01-17", expertise=88),
-            PersonRepository(name="mobile-app", commits=298, lastActivity="2024-01-14", expertise=82),
-            PersonRepository(name="auth-service", commits=45, lastActivity="2023-11-20", expertise=40),
+            PersonRepository(
+                name="ui-dashboard", commits=517, lastActivity="2024-01-17", expertise=88
+            ),
+            PersonRepository(
+                name="mobile-app", commits=298, lastActivity="2024-01-14", expertise=82
+            ),
+            PersonRepository(
+                name="auth-service", commits=45, lastActivity="2023-11-20", expertise=40
+            ),
         ],
         technologies=[
             Technology(name="React", level=90),
@@ -344,7 +396,11 @@ EXAMPLE_ANALYSIS = FeatureAnalysis(
             name="reports-service",
             confidence=95,
             reasoning="Forte histórico de commits contendo 'report', 'export', 'finance'. Responsável pela geração e exportação de relatórios.",
-            modules=["src/exporters/", "src/generators/financial.ts", "src/api/reports.controller.ts"],
+            modules=[
+                "src/exporters/",
+                "src/generators/financial.ts",
+                "src/api/reports.controller.ts",
+            ],
         ),
         ImpactedRepo(
             name="finance-core",
@@ -460,9 +516,7 @@ if __name__ == "__main__":
     total_tests += 1
     repos = get_all_repositories()
     if len(repos) != 5:
-        all_validation_failures.append(
-            f"get_all_repositories: Expected 5 repos, got {len(repos)}"
-        )
+        all_validation_failures.append(f"get_all_repositories: Expected 5 repos, got {len(repos)}")
 
     # Test 2: First repo is reports-service
     total_tests += 1
@@ -484,9 +538,7 @@ if __name__ == "__main__":
     total_tests += 1
     repo = get_repository_by_id("999")
     if repo is not None:
-        all_validation_failures.append(
-            f"get_repository_by_id('999'): Expected None, got {repo}"
-        )
+        all_validation_failures.append(f"get_repository_by_id('999'): Expected None, got {repo}")
 
     # Test 5: Repository data matches frontend mock
     total_tests += 1
@@ -507,7 +559,9 @@ if __name__ == "__main__":
 
     # Final validation result
     if all_validation_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(
+            f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:"
+        )
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)

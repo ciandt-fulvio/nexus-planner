@@ -88,9 +88,7 @@ if __name__ == "__main__":
         required_fields = ["id", "name", "description", "activity", "topContributors"]
         missing = [f for f in required_fields if f not in first]
         if missing:
-            all_validation_failures.append(
-                f"First repo missing fields: {missing}"
-            )
+            all_validation_failures.append(f"First repo missing fields: {missing}")
 
     # Test 4: First repository is reports-service
     total_tests += 1
@@ -101,7 +99,9 @@ if __name__ == "__main__":
 
     # Final validation result
     if all_validation_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(
+            f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:"
+        )
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)

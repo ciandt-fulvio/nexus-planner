@@ -64,9 +64,7 @@ if __name__ == "__main__":
     required_fields = ["feature", "impactedRepos", "recommendedPeople", "risks", "suggestedOrder"]
     missing = [f for f in required_fields if f not in data]
     if missing:
-        all_validation_failures.append(
-            f"Response missing fields: {missing}"
-        )
+        all_validation_failures.append(f"Response missing fields: {missing}")
 
     # Test 3: Response contains impacted repos
     total_tests += 1
@@ -99,7 +97,9 @@ if __name__ == "__main__":
 
     # Final validation result
     if all_validation_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(
+            f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:"
+        )
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)

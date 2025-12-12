@@ -89,15 +89,15 @@ if __name__ == "__main__":
     except ValueError:
         pass  # Expected
     except Exception as e:
-        all_validation_failures.append(f"Invalid alert type test: Unexpected error {type(e).__name__}")
+        all_validation_failures.append(
+            f"Invalid alert type test: Unexpected error {type(e).__name__}"
+        )
 
     # Test 5: Extra fields rejected
     total_tests += 1
     try:
         Alert(type="warning", message="Test", extra_field="should fail")
-        all_validation_failures.append(
-            "Extra fields: Expected validation error, but none raised"
-        )
+        all_validation_failures.append("Extra fields: Expected validation error, but none raised")
     except ValueError:
         pass  # Expected
     except Exception as e:
@@ -105,7 +105,9 @@ if __name__ == "__main__":
 
     # Final validation result
     if all_validation_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(
+            f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:"
+        )
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)

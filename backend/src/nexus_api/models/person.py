@@ -106,7 +106,9 @@ if __name__ == "__main__":
             name="Ana Silva",
             email="ana.silva@company.com",
             avatar="AS",
-            repositories=[PersonRepository(name="repo", commits=10, lastActivity="2024-01-01", expertise=80)],
+            repositories=[
+                PersonRepository(name="repo", commits=10, lastActivity="2024-01-01", expertise=80)
+            ],
             technologies=[Technology(name="TypeScript", level=95)],
             domains=["Relatórios"],
             recentActivity=47,
@@ -143,7 +145,9 @@ if __name__ == "__main__":
 
     # Final validation result
     if all_validation_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:")
+        print(
+            f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:"
+        )
         for failure in all_validation_failures:
             print(f"  - {failure}")
         sys.exit(1)

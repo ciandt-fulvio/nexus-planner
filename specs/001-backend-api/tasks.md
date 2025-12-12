@@ -197,13 +197,13 @@
 
 **Purpose**: Final validation and cleanup
 
-- [ ] T059 [P] Run mypy type checking on backend/src/
-- [ ] T060 [P] Run ruff linting and formatting on backend/src/
-- [ ] T061 [P] Verify all backend tests pass with coverage report
-- [ ] T062 [P] Export all services from frontend/src/services/index.ts
-- [ ] T063 Verify Swagger UI documents all endpoints at http://localhost:8000/docs
-- [ ] T064 Run quickstart.md validation (both backend and frontend start successfully)
-- [ ] T065 Verify frontend can fetch data from all API endpoints
+- [x] T059 [P] Run mypy type checking on backend/src/
+- [x] T060 [P] Run ruff linting and formatting on backend/src/
+- [x] T061 [P] Verify all backend tests pass with coverage report
+- [x] T062 [P] Export all services from frontend/src/services/index.ts
+- [x] T063 Verify Swagger UI documents all endpoints at http://localhost:8000/docs
+- [x] T064 Run quickstart.md validation (both backend and frontend start successfully)
+- [x] T065 Verify frontend can fetch data from all API endpoints
 
 ---
 
