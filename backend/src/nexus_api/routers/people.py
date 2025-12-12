@@ -9,9 +9,9 @@ Sample input: GET /api/v1/people
 Expected output: List of Person objects as JSON
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
-from nexus_api.data.mock_data import get_all_people
+from nexus_api.data.mock_data import get_all_people, get_person_by_id
 from nexus_api.models.person import Person
 
 router = APIRouter(
@@ -29,6 +29,26 @@ def list_people() -> list[Person]:
     repositories, technologies, and alerts.
     """
     return get_all_people()
+
+
+@router.get("/{person_id}", response_model=Person)
+def get_person(person_id: str) -> Person:
+    """
+    Get a person by ID.
+
+    Args:
+        person_id: The person ID to look up.
+
+    Returns:
+        The person with the given ID.
+
+    Raises:
+        HTTPException: 404 if person not found.
+    """
+    person = get_person_by_id(person_id)
+    if person is None:
+        raise HTTPException(status_code=404, detail=f"Person {person_id} not found")
+    return person
 
 
 if __name__ == "__main__":

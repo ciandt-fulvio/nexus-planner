@@ -56,6 +56,10 @@ async function fetchRepositories(): Promise<Repository[]> {
   return apiGet<Repository[]>('/repositories');
 }
 
+async function fetchRepository(id: string): Promise<Repository> {
+  return apiGet<Repository>(`/repositories/${id}`);
+}
+
 // Hooks
 
 /**
@@ -67,5 +71,19 @@ export function useRepositories() {
   return useQuery({
     queryKey: repositoryKeys.all,
     queryFn: fetchRepositories,
+  });
+}
+
+/**
+ * Hook to fetch a single repository by ID.
+ *
+ * @param id - Repository ID
+ * @returns Query result with repository
+ */
+export function useRepository(id: string) {
+  return useQuery({
+    queryKey: repositoryKeys.detail(id),
+    queryFn: () => fetchRepository(id),
+    enabled: !!id,
   });
 }

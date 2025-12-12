@@ -9,9 +9,9 @@ Sample input: GET /api/v1/repositories
 Expected output: List of Repository objects as JSON
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 
-from nexus_api.data.mock_data import get_all_repositories
+from nexus_api.data.mock_data import get_all_repositories, get_repository_by_id
 from nexus_api.models.repository import Repository
 
 router = APIRouter(
@@ -29,6 +29,26 @@ def list_repositories() -> list[Repository]:
     contributors, hotspots, and alerts.
     """
     return get_all_repositories()
+
+
+@router.get("/{repo_id}", response_model=Repository)
+def get_repository(repo_id: str) -> Repository:
+    """
+    Get a repository by ID.
+
+    Args:
+        repo_id: The repository ID to look up.
+
+    Returns:
+        The repository with the given ID.
+
+    Raises:
+        HTTPException: 404 if repository not found.
+    """
+    repo = get_repository_by_id(repo_id)
+    if repo is None:
+        raise HTTPException(status_code=404, detail=f"Repository {repo_id} not found")
+    return repo
 
 
 if __name__ == "__main__":

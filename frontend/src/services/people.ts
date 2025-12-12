@@ -50,6 +50,10 @@ async function fetchPeople(): Promise<Person[]> {
   return apiGet<Person[]>('/people');
 }
 
+async function fetchPerson(id: string): Promise<Person> {
+  return apiGet<Person>(`/people/${id}`);
+}
+
 // Hooks
 
 /**
@@ -61,5 +65,19 @@ export function usePeople() {
   return useQuery({
     queryKey: peopleKeys.all,
     queryFn: fetchPeople,
+  });
+}
+
+/**
+ * Hook to fetch a single person by ID.
+ *
+ * @param id - Person ID
+ * @returns Query result with person
+ */
+export function usePerson(id: string) {
+  return useQuery({
+    queryKey: peopleKeys.detail(id),
+    queryFn: () => fetchPerson(id),
+    enabled: !!id,
   });
 }

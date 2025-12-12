@@ -151,18 +151,18 @@
 
 ### Tests for User Story 4 (TDD Required)
 
-- [ ] T047 [P] [US4] Write integration test for GET /repositories/{id} success in backend/tests/integration/test_api.py
-- [ ] T048 [P] [US4] Write integration test for GET /repositories/{id} 404 error in backend/tests/integration/test_api.py
+- [x] T047 [P] [US4] Write integration test for GET /repositories/{id} success in backend/tests/integration/test_api.py
+- [x] T048 [P] [US4] Write integration test for GET /repositories/{id} 404 error in backend/tests/integration/test_api.py
 
 ### Implementation for User Story 4
 
-- [ ] T049 [US4] Add GET /repositories/{id} route to backend/src/nexus_api/routers/repositories.py
-- [ ] T050 [US4] Implement get_repository_by_id function with 404 handling
-- [ ] T051 [US4] Verify T047, T048 tests now pass
+- [x] T049 [US4] Add GET /repositories/{id} route to backend/src/nexus_api/routers/repositories.py
+- [x] T050 [US4] Implement get_repository_by_id function with 404 handling
+- [x] T051 [US4] Verify T047, T048 tests now pass
 
 ### Frontend Service for User Story 4
 
-- [ ] T052 [US4] Add useRepository(id) hook to frontend/src/services/repositories.ts
+- [x] T052 [US4] Add useRepository(id) hook to frontend/src/services/repositories.ts
 
 **Checkpoint**: Repository detail endpoint functional
 
@@ -176,18 +176,18 @@
 
 ### Tests for User Story 5 (TDD Required)
 
-- [ ] T053 [P] [US5] Write integration test for GET /people/{id} success in backend/tests/integration/test_api.py
-- [ ] T054 [P] [US5] Write integration test for GET /people/{id} 404 error in backend/tests/integration/test_api.py
+- [x] T053 [P] [US5] Write integration test for GET /people/{id} success in backend/tests/integration/test_api.py
+- [x] T054 [P] [US5] Write integration test for GET /people/{id} 404 error in backend/tests/integration/test_api.py
 
 ### Implementation for User Story 5
 
-- [ ] T055 [US5] Add GET /people/{id} route to backend/src/nexus_api/routers/people.py
-- [ ] T056 [US5] Implement get_person_by_id function with 404 handling
-- [ ] T057 [US5] Verify T053, T054 tests now pass
+- [x] T055 [US5] Add GET /people/{id} route to backend/src/nexus_api/routers/people.py
+- [x] T056 [US5] Implement get_person_by_id function with 404 handling
+- [x] T057 [US5] Verify T053, T054 tests now pass
 
 ### Frontend Service for User Story 5
 
-- [ ] T058 [US5] Add usePerson(id) hook to frontend/src/services/people.ts
+- [x] T058 [US5] Add usePerson(id) hook to frontend/src/services/people.ts
 
 **Checkpoint**: Person detail endpoint functional
 

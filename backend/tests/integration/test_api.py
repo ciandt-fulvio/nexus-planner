@@ -213,3 +213,76 @@ class TestAnalysisEndpoint:
             json={"description": "   "},
         )
         assert response.status_code == 422  # Validation error
+
+
+@pytest.mark.integration
+class TestRepositoryDetailEndpoint:
+    """Tests for GET /api/v1/repositories/{id} endpoint."""
+
+    def test_get_repository_by_id_success(
+        self, client: TestClient, api_v1_prefix: str
+    ) -> None:
+        """Test GET /repositories/1 returns the repository."""
+        response = client.get(f"{api_v1_prefix}/repositories/1")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == "1"
+        assert data["name"] == "reports-service"
+
+    def test_get_repository_by_id_not_found(
+        self, client: TestClient, api_v1_prefix: str
+    ) -> None:
+        """Test GET /repositories/999 returns 404."""
+        response = client.get(f"{api_v1_prefix}/repositories/999")
+        assert response.status_code == 404
+
+    def test_get_repository_contains_all_fields(
+        self, client: TestClient, api_v1_prefix: str
+    ) -> None:
+        """Test returned repository has all required fields."""
+        response = client.get(f"{api_v1_prefix}/repositories/1")
+        data = response.json()
+
+        required_fields = [
+            "id", "name", "description", "lastCommit", "totalCommits",
+            "contributors", "activity", "knowledgeConcentration",
+            "topContributors", "hotspots", "dependencies", "alerts"
+        ]
+        for field in required_fields:
+            assert field in data, f"Missing field: {field}"
+
+
+@pytest.mark.integration
+class TestPersonDetailEndpoint:
+    """Tests for GET /api/v1/people/{id} endpoint."""
+
+    def test_get_person_by_id_success(
+        self, client: TestClient, api_v1_prefix: str
+    ) -> None:
+        """Test GET /people/1 returns the person."""
+        response = client.get(f"{api_v1_prefix}/people/1")
+        assert response.status_code == 200
+        data = response.json()
+        assert data["id"] == "1"
+        assert data["name"] == "Ana Silva"
+
+    def test_get_person_by_id_not_found(
+        self, client: TestClient, api_v1_prefix: str
+    ) -> None:
+        """Test GET /people/999 returns 404."""
+        response = client.get(f"{api_v1_prefix}/people/999")
+        assert response.status_code == 404
+
+    def test_get_person_contains_all_fields(
+        self, client: TestClient, api_v1_prefix: str
+    ) -> None:
+        """Test returned person has all required fields."""
+        response = client.get(f"{api_v1_prefix}/people/1")
+        data = response.json()
+
+        required_fields = [
+            "id", "name", "email", "avatar", "repositories",
+            "technologies", "domains", "recentActivity", "alerts"
+        ]
+        for field in required_fields:
+            assert field in data, f"Missing field: {field}"
