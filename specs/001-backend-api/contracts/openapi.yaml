@@ -1,0 +1,414 @@
+openapi: 3.1.0
+info:
+  title: Nexus Planner API
+  description: Backend API for Git Intelligence Platform - Mocked Data Phase
+  version: 1.0.0
+  contact:
+    name: Nexus Planner Team
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Local development server
+
+paths:
+  /repositories:
+    get:
+      summary: List all repositories
+      description: Returns all repositories with summary and detailed information
+      operationId: listRepositories
+      tags:
+        - Repositories
+      responses:
+        '200':
+          description: List of repositories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Repository'
+
+  /repositories/{id}:
+    get:
+      summary: Get repository by ID
+      description: Returns detailed information for a specific repository
+      operationId: getRepository
+      tags:
+        - Repositories
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Repository ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Repository details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Repository'
+        '404':
+          description: Repository not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /people:
+    get:
+      summary: List all people
+      description: Returns all team members with their expertise and contribution data
+      operationId: listPeople
+      tags:
+        - People
+      responses:
+        '200':
+          description: List of people
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Person'
+
+  /people/{id}:
+    get:
+      summary: Get person by ID
+      description: Returns detailed information for a specific team member
+      operationId: getPerson
+      tags:
+        - People
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Person ID
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Person details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '404':
+          description: Person not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /analysis:
+    post:
+      summary: Analyze feature impact
+      description: |
+        Analyzes a feature description and returns impacted repositories,
+        recommended people, identified risks, and suggested implementation order.
+        Note: In MVP (mocked phase), returns static example data regardless of input.
+      operationId: analyzeFeature
+      tags:
+        - Analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalyzeFeatureRequest'
+      responses:
+        '200':
+          description: Feature analysis result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureAnalysis'
+        '400':
+          description: Invalid request (empty description)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+components:
+  schemas:
+    AlertType:
+      type: string
+      enum: [warning, danger, info]
+
+    Alert:
+      type: object
+      required: [type, message]
+      properties:
+        type:
+          $ref: '#/components/schemas/AlertType'
+        message:
+          type: string
+
+    ActivityLevel:
+      type: string
+      enum: [high, medium, low, stale]
+
+    TopContributor:
+      type: object
+      required: [name, percentage]
+      properties:
+        name:
+          type: string
+        percentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+
+    Hotspot:
+      type: object
+      required: [path, changes]
+      properties:
+        path:
+          type: string
+        changes:
+          type: integer
+          minimum: 1
+
+    Repository:
+      type: object
+      required:
+        - id
+        - name
+        - description
+        - lastCommit
+        - totalCommits
+        - contributors
+        - activity
+        - knowledgeConcentration
+        - topContributors
+        - hotspots
+        - dependencies
+        - alerts
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        lastCommit:
+          type: string
+          description: Date string (e.g., "2024-01-15")
+        totalCommits:
+          type: integer
+          minimum: 0
+        contributors:
+          type: integer
+          minimum: 0
+        activity:
+          $ref: '#/components/schemas/ActivityLevel'
+        knowledgeConcentration:
+          type: integer
+          minimum: 0
+          maximum: 100
+        topContributors:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopContributor'
+        hotspots:
+          type: array
+          items:
+            $ref: '#/components/schemas/Hotspot'
+        dependencies:
+          type: array
+          items:
+            type: string
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alert'
+
+    PersonRepository:
+      type: object
+      required: [name, commits, lastActivity, expertise]
+      properties:
+        name:
+          type: string
+        commits:
+          type: integer
+          minimum: 0
+        lastActivity:
+          type: string
+          description: Date string
+        expertise:
+          type: integer
+          minimum: 0
+          maximum: 100
+
+    Technology:
+      type: object
+      required: [name, level]
+      properties:
+        name:
+          type: string
+        level:
+          type: integer
+          minimum: 0
+          maximum: 100
+
+    Person:
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - avatar
+        - repositories
+        - technologies
+        - domains
+        - recentActivity
+        - alerts
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        avatar:
+          type: string
+          description: Initials (e.g., "AS")
+        repositories:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonRepository'
+        technologies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Technology'
+        domains:
+          type: array
+          items:
+            type: string
+        recentActivity:
+          type: integer
+          minimum: 0
+          description: Commits in last 30 days
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alert'
+
+    ImpactedRepo:
+      type: object
+      required: [name, confidence, reasoning, modules]
+      properties:
+        name:
+          type: string
+        confidence:
+          type: integer
+          minimum: 0
+          maximum: 100
+        reasoning:
+          type: string
+        modules:
+          type: array
+          items:
+            type: string
+
+    RecommendedPerson:
+      type: object
+      required: [name, relevance, reasoning]
+      properties:
+        name:
+          type: string
+        relevance:
+          type: integer
+          minimum: 0
+          maximum: 100
+        reasoning:
+          type: string
+
+    RiskLevel:
+      type: string
+      enum: [high, medium, low]
+
+    Risk:
+      type: object
+      required: [type, message]
+      properties:
+        type:
+          $ref: '#/components/schemas/RiskLevel'
+        message:
+          type: string
+
+    SuggestedStep:
+      type: object
+      required: [step, action, repository, reasoning]
+      properties:
+        step:
+          type: integer
+          minimum: 1
+        action:
+          type: string
+        repository:
+          type: string
+        reasoning:
+          type: string
+
+    FeatureAnalysis:
+      type: object
+      required:
+        - feature
+        - impactedRepos
+        - recommendedPeople
+        - risks
+        - suggestedOrder
+        - additionalRecommendations
+      properties:
+        feature:
+          type: string
+          description: The input feature description
+        impactedRepos:
+          type: array
+          items:
+            $ref: '#/components/schemas/ImpactedRepo'
+        recommendedPeople:
+          type: array
+          items:
+            $ref: '#/components/schemas/RecommendedPerson'
+        risks:
+          type: array
+          items:
+            $ref: '#/components/schemas/Risk'
+        suggestedOrder:
+          type: array
+          items:
+            $ref: '#/components/schemas/SuggestedStep'
+        additionalRecommendations:
+          type: array
+          items:
+            type: string
+
+    AnalyzeFeatureRequest:
+      type: object
+      required: [description]
+      properties:
+        description:
+          type: string
+          minLength: 1
+          description: Feature description to analyze
+
+    ErrorResponse:
+      type: object
+      required: [detail]
+      properties:
+        detail:
+          type: string
+          description: Error message
+
+tags:
+  - name: Repositories
+    description: Repository metrics and analysis
+  - name: People
+    description: Team member expertise and contributions
+  - name: Analysis
+    description: Feature impact analysis (Planning Assistant)
