@@ -25,10 +25,10 @@ Nexus Planner is a Git Intelligence Platform designed to help development teams 
 
 ## Context-Aware Behavior
 
-**Quando trabalhar em arquivos dentro de `/backend`**: Siga as diretrizes em @.claude/backend.md
-**Quando trabalhar em arquivos dentro de `/frontend`**: Siga as diretrizes em @.claude/frontend.md
+**When working on files inside `/backend`**: Follow the guidelines in @.claude/backend.md
+**When working on files inside `/frontend`**: Follow the guidelines in @.claude/frontend.md
 
-Esses arquivos contêm comandos específicos, padrões arquiteturais, e workflows de desenvolvimento para cada contexto.
+These files contain specific commands, architectural patterns, and development workflows for each context.
 
 ## Project Structure
 
@@ -208,6 +208,11 @@ pnpm dev
 - **Mock Data**: Currently all data is mocked in `backend/src/nexus_api/data/mock_data.py`
 - **Logging**: Backend uses loguru (check `logs/nexus_api.log` for debugging)
 - **Environment Variables**: Backend uses `.env` in `backend/` directory, frontend uses `frontend/.env`
+
+
+## Summary
+- O summario final com explicacão das suas acoes deve ser sempre escrito em portugues
+
 
 ## Imports and References
 

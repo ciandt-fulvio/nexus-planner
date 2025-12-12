@@ -4,11 +4,15 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { people } from "@/data/mockData";
-import { AlertTriangle, AlertCircle, Info, GitBranch, Code, Briefcase, TrendingUp } from "lucide-react";
+import { usePeople } from "@/services/people";
+import { AlertTriangle, AlertCircle, Info, GitBranch, Code, Briefcase, TrendingUp, Loader2 } from "lucide-react";
 
 const PersonDashboard = () => {
-  const [selectedPerson, setSelectedPerson] = useState(people[0]);
+  const { data: people, isLoading, error } = usePeople();
+  const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
+
+  // Select first person once data is loaded
+  const selectedPerson = people?.find(p => p.id === selectedPersonId) || people?.[0];
 
   const getAlertIcon = (type: string) => {
     switch (type) {
@@ -42,6 +46,39 @@ const PersonDashboard = () => {
     return <Badge className="bg-green-500">Alta</Badge>;
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+        <span className="ml-2 text-gray-600">Carregando pessoas...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertTriangle className="w-4 h-4" />
+        <AlertDescription>
+          Erro ao carregar pessoas: {error instanceof Error ? error.message : 'Erro desconhecido'}
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (!people || people.length === 0) {
+    return (
+      <Alert>
+        <Info className="w-4 h-4" />
+        <AlertDescription>Nenhuma pessoa encontrada.</AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (!selectedPerson) {
+    return null;
+  }
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -49,9 +86,9 @@ const PersonDashboard = () => {
           <Card
             key={person.id}
             className={`cursor-pointer transition-all hover:shadow-lg ${
-              selectedPerson.id === person.id ? "ring-2 ring-blue-500" : ""
+              selectedPerson.id === person.id ? "border-2 border-blue-200" : ""
             }`}
-            onClick={() => setSelectedPerson(person)}
+            onClick={() => setSelectedPersonId(person.id)}
           >
             <CardHeader className="pb-3">
               <div className="flex items-start gap-3">

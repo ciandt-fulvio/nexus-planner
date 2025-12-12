@@ -3,11 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { repositories } from "@/data/mockData";
-import { AlertTriangle, AlertCircle, Info, GitBranch, Users, Activity, TrendingUp } from "lucide-react";
+import { useRepositories } from "@/services/repositories";
+import { AlertTriangle, AlertCircle, Info, GitBranch, Users, Activity, TrendingUp, Loader2 } from "lucide-react";
 
 const RepositoryDashboard = () => {
-  const [selectedRepo, setSelectedRepo] = useState(repositories[0]);
+  const { data: repositories, isLoading, error } = useRepositories();
+  const [selectedRepoId, setSelectedRepoId] = useState<string | null>(null);
+
+  // Select first repo once data is loaded
+  const selectedRepo = repositories?.find(r => r.id === selectedRepoId) || repositories?.[0];
 
   const getActivityColor = (activity: string) => {
     switch (activity) {
@@ -47,6 +51,39 @@ const RepositoryDashboard = () => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-blue-500" />
+        <span className="ml-2 text-gray-600">Carregando repositórios...</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertTriangle className="w-4 h-4" />
+        <AlertDescription>
+          Erro ao carregar repositórios: {error instanceof Error ? error.message : 'Erro desconhecido'}
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (!repositories || repositories.length === 0) {
+    return (
+      <Alert>
+        <Info className="w-4 h-4" />
+        <AlertDescription>Nenhum repositório encontrado.</AlertDescription>
+      </Alert>
+    );
+  }
+
+  if (!selectedRepo) {
+    return null;
+  }
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -54,9 +91,9 @@ const RepositoryDashboard = () => {
           <Card
             key={repo.id}
             className={`cursor-pointer transition-all hover:shadow-lg ${
-              selectedRepo.id === repo.id ? "ring-2 ring-blue-500" : ""
+              selectedRepo.id === repo.id ? "border-2 border-blue-200" : ""
             }`}
-            onClick={() => setSelectedRepo(repo)}
+            onClick={() => setSelectedRepoId(repo.id)}
           >
             <CardHeader className="pb-3">
               <div className="flex items-start justify-between">

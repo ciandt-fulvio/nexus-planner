@@ -9,21 +9,24 @@ const Index = () => {
   const [activeTab, setActiveTab] = useState("repositories");
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <Tabs value={activeTab} onValueChange={setActiveTab} className="min-h-screen bg-gray-50">
       <header className="bg-white border-b border-gray-200 shadow-sm">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-          <h1 className="text-3xl font-bold text-gray-900">
-            Git Intelligence Platform
-          </h1>
+          <div className="flex items-center gap-3">
+            <img
+              src="/logo-512x512.png"
+              alt="NexusPlanner Logo"
+              className="h-10 w-10"
+            />
+            <h1 className="text-3xl font-bold text-gray-900">
+              NexusPlanner
+            </h1>
+          </div>
           <p className="mt-2 text-sm text-gray-600">
-            Análise inteligente de repositórios, conhecimento e planejamento
+            Planejamento de roadmap apoiados por IA
           </p>
-        </div>
-      </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-3 mb-8">
+          <TabsList className="grid w-full grid-cols-3 mt-6">
             <TabsTrigger value="repositories" className="flex items-center gap-2">
               <GitBranch className="w-4 h-4" />
               Repositórios
@@ -37,21 +40,23 @@ const Index = () => {
               Assistente de Planejamento
             </TabsTrigger>
           </TabsList>
+        </div>
+      </header>
 
-          <TabsContent value="repositories">
-            <RepositoryDashboard />
-          </TabsContent>
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <TabsContent value="repositories">
+          <RepositoryDashboard />
+        </TabsContent>
 
-          <TabsContent value="people">
-            <PersonDashboard />
-          </TabsContent>
+        <TabsContent value="people">
+          <PersonDashboard />
+        </TabsContent>
 
-          <TabsContent value="assistant">
-            <PlanningAssistant />
-          </TabsContent>
-        </Tabs>
+        <TabsContent value="assistant">
+          <PlanningAssistant />
+        </TabsContent>
       </main>
-    </div>
+    </Tabs>
   );
 };
 

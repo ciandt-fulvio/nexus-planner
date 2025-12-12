@@ -5,29 +5,28 @@ import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Progress } from "@/components/ui/progress";
-import { exampleAnalysis, type FeatureAnalysis } from "@/data/mockData";
+import { useAnalyzeFeature, type FeatureAnalysis } from "@/services/analysis";
 import { Sparkles, Send, GitBranch, Users, AlertTriangle, ListOrdered, Lightbulb, Loader2 } from "lucide-react";
-import { showSuccess } from "@/utils/toast";
+import { showSuccess, showError } from "@/utils/toast";
 
 const PlanningAssistant = () => {
   const [input, setInput] = useState("");
-  const [analysis, setAnalysis] = useState<FeatureAnalysis | null>(null);
-  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const { mutate: analyzeFeature, data: analysis, isPending: isAnalyzing } = useAnalyzeFeature();
 
   const handleAnalyze = () => {
     if (!input.trim()) return;
 
-    setIsAnalyzing(true);
-    
-    // Simulate AI processing
-    setTimeout(() => {
-      setAnalysis({
-        ...exampleAnalysis,
-        feature: input,
-      });
-      setIsAnalyzing(false);
-      showSuccess("Análise concluída com sucesso!");
-    }, 2000);
+    analyzeFeature(
+      { description: input },
+      {
+        onSuccess: () => {
+          showSuccess("Análise concluída com sucesso!");
+        },
+        onError: (error) => {
+          showError(`Erro ao analisar: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
+        },
+      }
+    );
   };
 
   const getRiskColor = (type: string) => {

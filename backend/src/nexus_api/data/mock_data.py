@@ -340,7 +340,8 @@ PEOPLE: list[Person] = [
                 type=AlertType.WARNING,
                 message="Responsável por 52% das alterações em analytics-service",
             ),
-            Alert(type=AlertType.INFO, message="Especialista em processamento e análise de dados"),
+            Alert(type=AlertType.INFO,
+                  message="Especialista em processamento e análise de dados"),
         ],
     ),
     Person(
@@ -368,8 +369,10 @@ PEOPLE: list[Person] = [
         domains=["Frontend", "Mobile", "Componentes", "State Management"],
         recentActivity=41,
         alerts=[
-            Alert(type=AlertType.INFO, message="Forte atuação em frontend web e mobile"),
-            Alert(type=AlertType.INFO, message="Bom complemento de conhecimento com Clara Mendes"),
+            Alert(type=AlertType.INFO,
+                  message="Forte atuação em frontend web e mobile"),
+            Alert(type=AlertType.INFO,
+                  message="Bom complemento de conhecimento com Clara Mendes"),
         ],
     ),
 ]
@@ -406,13 +409,15 @@ EXAMPLE_ANALYSIS = FeatureAnalysis(
             name="finance-core",
             confidence=88,
             reasoning="Contém estruturas de dados financeiros e lógica de consolidação usadas em relatórios.",
-            modules=["src/ledger/", "src/calculations/balance.ts", "src/models/account.ts"],
+            modules=["src/ledger/", "src/calculations/balance.ts",
+                     "src/models/account.ts"],
         ),
         ImpactedRepo(
             name="ui-dashboard",
             confidence=82,
             reasoning="Interface responsável por telas de relatórios, filtros e visualização de dados financeiros.",
-            modules=["src/pages/Reports.tsx", "src/components/Charts/", "src/components/Filters/"],
+            modules=["src/pages/Reports.tsx",
+                     "src/components/Charts/", "src/components/Filters/"],
         ),
         ImpactedRepo(
             name="analytics-service",
@@ -516,7 +521,8 @@ if __name__ == "__main__":
     total_tests += 1
     repos = get_all_repositories()
     if len(repos) != 5:
-        all_validation_failures.append(f"get_all_repositories: Expected 5 repos, got {len(repos)}")
+        all_validation_failures.append(
+            f"get_all_repositories: Expected 5 repos, got {len(repos)}")
 
     # Test 2: First repo is reports-service
     total_tests += 1
@@ -538,7 +544,8 @@ if __name__ == "__main__":
     total_tests += 1
     repo = get_repository_by_id("999")
     if repo is not None:
-        all_validation_failures.append(f"get_repository_by_id('999'): Expected None, got {repo}")
+        all_validation_failures.append(
+            f"get_repository_by_id('999'): Expected None, got {repo}")
 
     # Test 5: Repository data matches frontend mock
     total_tests += 1
@@ -566,5 +573,6 @@ if __name__ == "__main__":
             print(f"  - {failure}")
         sys.exit(1)
     else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
+        print(
+            f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
         sys.exit(0)
