@@ -16,6 +16,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from nexus_api.config import settings
+from nexus_api.data import mock_data
 from nexus_api.db.tables import CommitTable, PersonTable, RepositoryTable
 from nexus_api.models.person import Person, PersonRepository, Technology
 from nexus_api.services import alert_service
@@ -167,12 +168,17 @@ async def get_all_people(db: AsyncSession) -> list[Person]:
     """
     Get all people with calculated metrics.
 
+    Returns mock data if USE_MOCK_DATA is true, otherwise queries database.
+
     Args:
         db: Async database session
 
     Returns:
         List of Person models with calculated metrics
     """
+    if settings.use_mock_data:
+        return mock_data.get_all_people()
+
     stmt = select(PersonTable).order_by(PersonTable.name)
     result = await db.execute(stmt)
     persons = result.scalars().all()
@@ -187,6 +193,8 @@ async def get_person_by_id(
     """
     Get a person by ID with calculated metrics.
 
+    Returns mock data if USE_MOCK_DATA is true, otherwise queries database.
+
     Args:
         db: Async database session
         person_id: UUID of the person
@@ -194,6 +202,9 @@ async def get_person_by_id(
     Returns:
         Person model with calculated metrics, or None if not found
     """
+    if settings.use_mock_data:
+        return mock_data.get_person_by_id(person_id)
+
     stmt = select(PersonTable).where(PersonTable.id == person_id)
     result = await db.execute(stmt)
     person = result.scalar_one_or_none()

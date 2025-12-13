@@ -16,6 +16,8 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from nexus_api.config import settings
+from nexus_api.data import mock_data
 from nexus_api.db.tables import CommitTable, FeatureAnalysisTable, PersonTable, RepositoryTable
 from nexus_api.models.analysis import (
     FeatureAnalysis,
@@ -107,6 +109,8 @@ async def create_analysis(
     """
     Create a feature impact analysis based on repository and person data.
 
+    Returns mock analysis if USE_MOCK_DATA is true, otherwise analyzes database.
+
     Args:
         db: Async database session
         feature_description: Description of the feature to analyze
@@ -114,6 +118,10 @@ async def create_analysis(
     Returns:
         FeatureAnalysis Pydantic model with impact assessment
     """
+    # Return mock analysis if USE_MOCK_DATA is true
+    if settings.use_mock_data:
+        return mock_data.get_example_analysis()
+
     # Get active repositories
     active_repos = await _get_active_repositories(db)
 

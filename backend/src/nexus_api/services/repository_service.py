@@ -16,6 +16,7 @@ from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from nexus_api.config import settings
+from nexus_api.data import mock_data
 from nexus_api.db.tables import CommitTable, RepositoryTable
 from nexus_api.models.repository import ActivityLevel, Hotspot, Repository, TopContributor
 from nexus_api.services import commit_service
@@ -100,12 +101,17 @@ async def get_all_repositories(db: AsyncSession) -> list[Repository]:
     """
     Get all repositories with calculated metrics.
 
+    Returns mock data if USE_MOCK_DATA is true, otherwise queries database.
+
     Args:
         db: Async database session
 
     Returns:
         List of Repository models with calculated metrics
     """
+    if settings.use_mock_data:
+        return mock_data.get_all_repositories()
+
     stmt = select(RepositoryTable).order_by(RepositoryTable.name)
     result = await db.execute(stmt)
     repos = result.scalars().all()
@@ -120,6 +126,8 @@ async def get_repository_by_id(
     """
     Get a repository by ID with calculated metrics.
 
+    Returns mock data if USE_MOCK_DATA is true, otherwise queries database.
+
     Args:
         db: Async database session
         repository_id: UUID of the repository
@@ -127,6 +135,9 @@ async def get_repository_by_id(
     Returns:
         Repository model with calculated metrics, or None if not found
     """
+    if settings.use_mock_data:
+        return mock_data.get_repository_by_id(repository_id)
+
     stmt = select(RepositoryTable).where(RepositoryTable.id == repository_id)
     result = await db.execute(stmt)
     repo = result.scalar_one_or_none()
