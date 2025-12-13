@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
 from nexus_api.config import settings
-from nexus_api.db.database import Base, engine
+from nexus_api.db.database import async_session, Base, engine
 from nexus_api.routers import analysis, people, repositories
 
 # Configure loguru
@@ -32,10 +32,22 @@ async def lifespan(app: FastAPI):
     # Startup: Create database tables
     # Import tables to register them with Base.metadata
     from nexus_api.db import tables  # noqa: F401
+    from nexus_api.services import seed_service
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
     logger.info("Database tables created successfully")
+
+    # Seed database with development data if empty
+    async with async_session() as db:
+        result = await seed_service.seed_database(db)
+        if result.get("skipped"):
+            logger.info("Database already has data, skipping seed")
+        else:
+            logger.info(
+                f"Database seeded: {result['repositories']} repos, "
+                f"{result['people']} people, {result['commits']} commits"
+            )
 
     yield
 

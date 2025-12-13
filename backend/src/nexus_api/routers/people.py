@@ -13,7 +13,6 @@ Expected output: List of Person objects as JSON
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from nexus_api.data import mock_data
 from nexus_api.db.database import get_db
 from nexus_api.models.person import Person
 from nexus_api.services import person_service
@@ -32,13 +31,9 @@ async def list_people(db: AsyncSession = Depends(get_db)) -> list[Person]:
     Returns a list of all team members with their expertise metrics,
     repositories, technologies, and alerts.
 
-    Falls back to mock data if database is empty.
+    Database is seeded automatically on startup in development mode.
     """
-    people = await person_service.get_all_people(db)
-    if not people:
-        # Fallback to mock data for development
-        return mock_data.get_all_people()
-    return people
+    return await person_service.get_all_people(db)
 
 
 @router.get("/{person_id}", response_model=Person)
@@ -60,14 +55,9 @@ async def get_person(
         HTTPException: 404 if person not found.
     """
     person = await person_service.get_person_by_id(db, person_id)
-    if person is not None:
-        return person
-
-    # Fallback to mock data
-    mock_person = mock_data.get_person_by_id(person_id)
-    if mock_person is None:
+    if person is None:
         raise HTTPException(status_code=404, detail=f"Person {person_id} not found")
-    return mock_person
+    return person
 
 
 if __name__ == "__main__":

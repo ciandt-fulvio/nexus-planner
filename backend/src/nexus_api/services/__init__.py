@@ -6,6 +6,7 @@ Services are responsible for:
 - Calculating metrics (activity, concentration, expertise)
 - Orchestrating database operations
 - Converting between ORM tables and Pydantic models
+- Seeding database with development data
 
 Services are pure functions where possible, making them easy to test.
 """
@@ -16,6 +17,7 @@ from nexus_api.services import (
     commit_service,
     person_service,
     repository_service,
+    seed_service,
 )
 
 __all__ = [
@@ -24,4 +26,5 @@ __all__ = [
     "commit_service",
     "person_service",
     "repository_service",
+    "seed_service",
 ]

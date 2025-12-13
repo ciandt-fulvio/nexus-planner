@@ -13,7 +13,6 @@ Expected output: List of Repository objects as JSON
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from nexus_api.data import mock_data
 from nexus_api.db.database import get_db
 from nexus_api.models.repository import Repository
 from nexus_api.services import repository_service
@@ -32,13 +31,9 @@ async def list_repositories(db: AsyncSession = Depends(get_db)) -> list[Reposito
     Returns a list of all repositories with their metrics,
     contributors, hotspots, and alerts.
 
-    Falls back to mock data if database is empty.
+    Database is seeded automatically on startup in development mode.
     """
-    repos = await repository_service.get_all_repositories(db)
-    if not repos:
-        # Fallback to mock data for development
-        return mock_data.get_all_repositories()
-    return repos
+    return await repository_service.get_all_repositories(db)
 
 
 @router.get("/{repo_id}", response_model=Repository)
@@ -60,14 +55,9 @@ async def get_repository(
         HTTPException: 404 if repository not found.
     """
     repo = await repository_service.get_repository_by_id(db, repo_id)
-    if repo is not None:
-        return repo
-
-    # Fallback to mock data
-    mock_repo = mock_data.get_repository_by_id(repo_id)
-    if mock_repo is None:
+    if repo is None:
         raise HTTPException(status_code=404, detail=f"Repository {repo_id} not found")
-    return mock_repo
+    return repo
 
 
 if __name__ == "__main__":

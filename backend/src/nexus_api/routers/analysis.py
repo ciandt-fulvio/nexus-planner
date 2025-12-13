@@ -13,7 +13,6 @@ Expected output: FeatureAnalysis object as JSON
 from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from nexus_api.data import mock_data
 from nexus_api.db.database import get_db
 from nexus_api.models.analysis import AnalyzeFeatureRequest, FeatureAnalysis
 from nexus_api.services import analysis_service
@@ -33,8 +32,9 @@ async def analyze_feature(
     Analyze a feature description and return impact assessment.
 
     Creates an analysis based on repository and person data from the database.
-    Falls back to mock data if database has insufficient data.
     Saves the analysis to the database for future reference.
+
+    Database is seeded automatically on startup in development mode.
 
     Args:
         request: Feature description to analyze
@@ -46,12 +46,9 @@ async def analyze_feature(
     # Create analysis from database data
     analysis = await analysis_service.create_analysis(db, request.description)
 
-    # If no impacted repos found, fall back to mock data
-    if not analysis.impactedRepos:
-        return mock_data.get_example_analysis()
-
-    # Save analysis to database
-    await analysis_service.save_analysis(db, analysis)
+    # Save analysis to database if we have impacted repos
+    if analysis.impactedRepos:
+        await analysis_service.save_analysis(db, analysis)
 
     return analysis
 
