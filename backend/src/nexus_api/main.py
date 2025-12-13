@@ -7,11 +7,14 @@ Sample input: HTTP requests to /api/v1/* endpoints
 Expected output: JSON responses with repository, people, and analysis data
 """
 
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
 from nexus_api.config import settings
+from nexus_api.db.database import Base, engine
 from nexus_api.routers import analysis, people, repositories
 
 # Configure loguru
@@ -22,12 +25,32 @@ logger.add(
     level="DEBUG" if settings.debug else "INFO",
 )
 
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Application lifespan handler for startup and shutdown events."""
+    # Startup: Create database tables
+    # Import tables to register them with Base.metadata
+    from nexus_api.db import tables  # noqa: F401
+
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    logger.info("Database tables created successfully")
+
+    yield
+
+    # Shutdown: Dispose engine
+    await engine.dispose()
+    logger.info("Database connection closed")
+
+
 app = FastAPI(
     title="Nexus API",
     description="Backend API for Git Intelligence Platform",
     version="0.1.0",
     docs_url="/docs",
     openapi_url="/openapi.json",
+    lifespan=lifespan,
 )
 
 # Configure CORS
