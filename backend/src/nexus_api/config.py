@@ -8,6 +8,7 @@ Sample input: Environment variables in backend/.env
 Expected output: Settings instance with validated configuration
 """
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -22,21 +23,23 @@ class Settings(BaseSettings):
     )
 
     # Server Configuration
-    host: str = "0.0.0.0"
-    port: int = 8000
-    debug: bool = False
+    host: str = Field(default="0.0.0.0", description="Server host")
+    port: int = Field(default=8000, description="Server port")
+    debug: bool = Field(default=False, description="Debug mode")
 
     # CORS Configuration
-    cors_origins: str = "http://localhost:8080"
+    cors_origins: str = Field(default="http://localhost:8080", description="CORS allowed origins (comma-separated)")
 
     # API Configuration
-    api_v1_prefix: str = "/api/v1"
+    api_v1_prefix: str = Field(default="/api/v1", description="API v1 prefix")
 
     # Database Configuration
-    database_url: str = "sqlite+aiosqlite:///nexus.db"
+    database_url: str = Field(default="sqlite+aiosqlite:///nexus.db", description="Database URL")
 
     # Seed Configuration
-    auto_seed: bool = True  # Automatically seed database on startup if empty
+    auto_seed: bool = Field(
+        ..., description="Automatically seed database on startup if empty (true) or not (false)"
+    )
 
     # Sliding Window Configuration
     window_size: int = 300  # Number of most recent commits for calculations
@@ -70,23 +73,41 @@ if __name__ == "__main__":
     all_validation_failures: list[str] = []
     total_tests = 0
 
-    # Test 1: Settings load with defaults
+    # Test 1: Settings load with defaults and required AUTO_SEED
     total_tests += 1
     try:
-        test_settings = Settings()
+        test_settings = Settings(auto_seed=True)
         if test_settings.host != "0.0.0.0":
             all_validation_failures.append(
                 f"Default host: Expected '0.0.0.0', got '{test_settings.host}'"
             )
         if test_settings.port != 8000:
             all_validation_failures.append(f"Default port: Expected 8000, got {test_settings.port}")
+        if test_settings.auto_seed != True:
+            all_validation_failures.append(
+                f"AUTO_SEED: Expected True, got {test_settings.auto_seed}"
+            )
     except Exception as e:
         all_validation_failures.append(f"Settings load failed: {e}")
 
-    # Test 2: CORS origins parsing
+    # Test 2: AUTO_SEED can be true or false
     total_tests += 1
     try:
-        test_settings = Settings(cors_origins="http://localhost:3000,http://localhost:8080")
+        test_settings_false = Settings(auto_seed=False)
+        if test_settings_false.auto_seed != False:
+            all_validation_failures.append(
+                f"AUTO_SEED false: Expected False, got {test_settings_false.auto_seed}"
+            )
+    except Exception as e:
+        all_validation_failures.append(f"AUTO_SEED false test failed: {e}")
+
+    # Test 3: CORS origins parsing
+    total_tests += 1
+    try:
+        test_settings = Settings(
+            auto_seed=False,
+            cors_origins="http://localhost:3000,http://localhost:8080"
+        )
         expected_origins = ["http://localhost:3000", "http://localhost:8080"]
         if test_settings.cors_origins_list != expected_origins:
             all_validation_failures.append(
@@ -95,10 +116,10 @@ if __name__ == "__main__":
     except Exception as e:
         all_validation_failures.append(f"CORS parsing failed: {e}")
 
-    # Test 3: API prefix default
+    # Test 4: API prefix default
     total_tests += 1
     try:
-        test_settings = Settings()
+        test_settings = Settings(auto_seed=True)
         if test_settings.api_v1_prefix != "/api/v1":
             all_validation_failures.append(
                 f"API prefix: Expected '/api/v1', got '{test_settings.api_v1_prefix}'"
@@ -106,10 +127,10 @@ if __name__ == "__main__":
     except Exception as e:
         all_validation_failures.append(f"API prefix test failed: {e}")
 
-    # Test 4: Threshold settings defaults
+    # Test 5: Threshold settings defaults
     total_tests += 1
     try:
-        test_settings = Settings()
+        test_settings = Settings(auto_seed=True)
         if test_settings.window_size != 300:
             all_validation_failures.append(
                 f"Window size: Expected 300, got {test_settings.window_size}"
@@ -128,17 +149,6 @@ if __name__ == "__main__":
             )
     except Exception as e:
         all_validation_failures.append(f"Threshold settings test failed: {e}")
-
-    # Test 5: Database URL default
-    total_tests += 1
-    try:
-        test_settings = Settings()
-        if test_settings.database_url != "sqlite+aiosqlite:///nexus.db":
-            all_validation_failures.append(
-                f"Database URL: Expected 'sqlite+aiosqlite:///nexus.db', got '{test_settings.database_url}'"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"Database URL test failed: {e}")
 
     # Final validation result
     if all_validation_failures:
