@@ -27,7 +27,7 @@ class ActivityLevel(str, Enum):
 
 
 class TopContributor(BaseModel):
-    """Top contributor with percentage of commits."""
+    """Top contributor with commit count and percentage."""
 
     model_config = ConfigDict(
         str_strip_whitespace=True,
@@ -36,11 +36,13 @@ class TopContributor(BaseModel):
     )
 
     name: str
+    email: str
+    commits: int
     percentage: int  # 0-100
 
 
 class Hotspot(BaseModel):
-    """File hotspot with change frequency."""
+    """File hotspot with change frequency and contributor count."""
 
     model_config = ConfigDict(
         str_strip_whitespace=True,
@@ -50,6 +52,8 @@ class Hotspot(BaseModel):
 
     path: str
     changes: int  # Positive integer
+    lastModified: str  # Date string (e.g., "2024-01-15")
+    contributors: int
 
 
 class Repository(BaseModel):
@@ -96,7 +100,9 @@ if __name__ == "__main__":
     # Test 2: TopContributor creation
     total_tests += 1
     try:
-        contributor = TopContributor(name="Alice", percentage=50)
+        contributor = TopContributor(
+            name="Alice", email="alice@test.com", commits=50, percentage=50
+        )
         if contributor.name != "Alice" or contributor.percentage != 50:
             all_validation_failures.append(
                 f"TopContributor: Expected Alice/50, got {contributor.name}/{contributor.percentage}"
@@ -107,7 +113,9 @@ if __name__ == "__main__":
     # Test 3: Hotspot creation
     total_tests += 1
     try:
-        hotspot = Hotspot(path="src/main.ts", changes=100)
+        hotspot = Hotspot(
+            path="src/main.ts", changes=100, lastModified="2024-01-15", contributors=5
+        )
         if hotspot.path != "src/main.ts" or hotspot.changes != 100:
             all_validation_failures.append(
                 f"Hotspot: Expected src/main.ts/100, got {hotspot.path}/{hotspot.changes}"
@@ -129,8 +137,12 @@ if __name__ == "__main__":
             contributors=5,
             activity=ActivityLevel.HIGH,
             knowledgeConcentration=45,
-            topContributors=[TopContributor(name="Alice", percentage=60)],
-            hotspots=[Hotspot(path="src/main.ts", changes=50)],
+            topContributors=[
+                TopContributor(name="Alice", email="alice@test.com", commits=60, percentage=60)
+            ],
+            hotspots=[
+                Hotspot(path="src/main.ts", changes=50, lastModified="2024-01-15", contributors=3)
+            ],
             dependencies=["other-repo"],
             alerts=[Alert(type=AlertType.INFO, message="Test")],
         )
