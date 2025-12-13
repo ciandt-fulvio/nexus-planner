@@ -35,6 +35,9 @@ class Settings(BaseSettings):
     # Database Configuration
     database_url: str = "sqlite+aiosqlite:///nexus.db"
 
+    # Seed Configuration
+    auto_seed: bool = True  # Automatically seed database on startup if empty
+
     # Sliding Window Configuration
     window_size: int = 300  # Number of most recent commits for calculations
 

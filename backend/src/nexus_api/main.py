@@ -38,16 +38,19 @@ async def lifespan(app: FastAPI):
         await conn.run_sync(Base.metadata.create_all)
     logger.info("Database tables created successfully")
 
-    # Seed database with development data if empty
-    async with async_session() as db:
-        result = await seed_service.seed_database(db)
-        if result.get("skipped"):
-            logger.info("Database already has data, skipping seed")
-        else:
-            logger.info(
-                f"Database seeded: {result['repositories']} repos, "
-                f"{result['people']} people, {result['commits']} commits"
-            )
+    # Seed database with development data if auto_seed is enabled and database is empty
+    if settings.auto_seed:
+        async with async_session() as db:
+            result = await seed_service.seed_database(db)
+            if result.get("skipped"):
+                logger.info("Database already has data, skipping seed")
+            else:
+                logger.info(
+                    f"Database seeded: {result['repositories']} repos, "
+                    f"{result['people']} people, {result['commits']} commits"
+                )
+    else:
+        logger.info("Auto-seed disabled (AUTO_SEED=false), database will start empty")
 
     yield
 
