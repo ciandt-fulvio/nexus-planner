@@ -11,7 +11,7 @@ Provides:
 
 import sys
 import uuid
-from collections.abc import AsyncGenerator
+from collections.abc import AsyncGenerator, Generator
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -28,9 +28,14 @@ from nexus_api.main import app  # noqa: E402
 
 
 @pytest.fixture
-def client() -> TestClient:
-    """Create a test client for the FastAPI application."""
-    return TestClient(app)
+def client() -> Generator[TestClient, None, None]:
+    """Create a test client for the FastAPI application.
+
+    Uses context manager to trigger lifespan events (startup/shutdown).
+    This ensures database tables are created and seeded before tests run.
+    """
+    with TestClient(app) as test_client:
+        yield test_client
 
 
 @pytest.fixture
