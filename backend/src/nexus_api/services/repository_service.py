@@ -19,6 +19,7 @@ from nexus_api.config import settings
 from nexus_api.db.tables import CommitTable, RepositoryTable
 from nexus_api.models.repository import ActivityLevel, Hotspot, Repository, TopContributor
 from nexus_api.services import commit_service
+from nexus_api.services import alert_service
 from nexus_api.services.metrics import (
     calculate_activity_level,
     calculate_hotspots,
@@ -76,6 +77,9 @@ async def _build_repository_model(
     # Count unique contributors
     unique_contributors = len(contributor_stats)
 
+    # Generate alerts for this repository
+    alerts = await alert_service.generate_alerts_for_repository(db, repo.id)
+
     return Repository(
         id=repo.id,
         name=repo.name,
@@ -88,7 +92,7 @@ async def _build_repository_model(
         topContributors=top_contributors,
         hotspots=hotspots,
         dependencies=[],  # TODO: Implement dependency detection
-        alerts=[],  # TODO: Implement alert integration (US3)
+        alerts=alerts,
     )
 
 

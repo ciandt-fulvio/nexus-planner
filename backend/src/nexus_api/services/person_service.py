@@ -18,6 +18,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from nexus_api.config import settings
 from nexus_api.db.tables import CommitTable, PersonTable, RepositoryTable
 from nexus_api.models.person import Person, PersonRepository, Technology
+from nexus_api.services import alert_service
 
 
 async def _get_person_repositories(
@@ -128,6 +129,9 @@ async def _build_person_model(
     # Get recent activity
     recent_activity = await _get_recent_activity(db, person.email)
 
+    # Generate alerts for this person
+    alerts = await alert_service.generate_alerts_for_person(db, person.id)
+
     return Person(
         id=person.id,
         name=person.name,
@@ -137,7 +141,7 @@ async def _build_person_model(
         technologies=[],  # TODO: Implement technology detection
         domains=[],  # TODO: Implement domain detection
         recentActivity=recent_activity,
-        alerts=[],  # TODO: Implement alert integration (US3)
+        alerts=alerts,
     )
 
 
