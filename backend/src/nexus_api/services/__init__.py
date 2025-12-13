@@ -9,3 +9,7 @@ Services are responsible for:
 
 Services are pure functions where possible, making them easy to test.
 """
+
+from nexus_api.services import commit_service, person_service, repository_service
+
+__all__ = ["commit_service", "person_service", "repository_service"]
