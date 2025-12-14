@@ -9,8 +9,7 @@ Sample input: Person ID or no filter
 Expected output: Person Pydantic models with calculated metrics
 """
 
-from datetime import datetime, timedelta, timezone
-from typing import Any
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -18,7 +17,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from nexus_api.config import settings
 from nexus_api.data import mock_data
 from nexus_api.db.tables import CommitTable, PersonTable, RepositoryTable
-from nexus_api.models.person import Person, PersonRepository, Technology
+from nexus_api.models.person import Person, PersonRepository
 from nexus_api.services import alert_service
 
 
@@ -98,7 +97,7 @@ async def _get_recent_activity(
     Returns:
         Number of commits in last 30 days
     """
-    thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    thirty_days_ago = datetime.now(UTC) - timedelta(days=30)
 
     stmt = (
         select(func.count())

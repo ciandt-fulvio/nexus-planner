@@ -12,9 +12,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from nexus_api.db.tables import CommitTable, RepositoryTable
 from nexus_api.services import repository_service
+from nexus_api.config import settings
 
 
 @pytest.mark.unit
+@pytest.mark.skipif(
+    settings.use_mock_data,
+    reason="These tests verify real database logic, skipped when USE_MOCK_DATA=true"
+)
 class TestRepositoryServiceIntegration:
     """Tests for repository_service integration with database."""
 

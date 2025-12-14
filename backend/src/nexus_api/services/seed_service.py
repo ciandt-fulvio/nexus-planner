@@ -11,7 +11,7 @@ Expected output: Populated database with mock repositories, people, and commits
 """
 
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -88,7 +88,7 @@ async def seed_database(db: AsyncSession) -> dict[str, int]:
 
     # Create synthetic commits based on mock data
     commits_created = 0
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     for mock_repo in mock_repos:
         repo_id = repo_mapping.get(mock_repo.name)
