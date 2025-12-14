@@ -1,18 +1,21 @@
 """
 Analysis router for Nexus API.
 
-Provides endpoint for feature analysis.
+Provides endpoint for feature analysis with database storage.
 
 Docs: https://fastapi.tiangolo.com/tutorial/bigger-applications/
+Docs: https://fastapi.tiangolo.com/tutorial/dependencies/
 
 Sample input: POST /api/v1/analysis with {"description": "feature text"}
 Expected output: FeatureAnalysis object as JSON
 """
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from nexus_api.data.mock_data import get_example_analysis
+from nexus_api.db.database import get_db
 from nexus_api.models.analysis import AnalyzeFeatureRequest, FeatureAnalysis
+from nexus_api.services import analysis_service
 
 router = APIRouter(
     prefix="/analysis",
@@ -21,30 +24,47 @@ router = APIRouter(
 
 
 @router.post("", response_model=FeatureAnalysis)
-def analyze_feature(request: AnalyzeFeatureRequest) -> FeatureAnalysis:
+async def analyze_feature(
+    request: AnalyzeFeatureRequest,
+    db: AsyncSession = Depends(get_db),
+) -> FeatureAnalysis:
     """
-    Analyze a feature description.
+    Analyze a feature description and return impact assessment.
 
-    Returns static example analysis regardless of input.
-    In future versions, this will perform actual analysis.
+    Creates an analysis based on repository and person data from the database.
+    Saves the analysis to the database for future reference.
+
+    Database is seeded automatically on startup in development mode.
+
+    Args:
+        request: Feature description to analyze
+        db: Database session from dependency injection
+
+    Returns:
+        FeatureAnalysis with impacted repos, recommended people, and risks
     """
-    # For now, return the static example analysis
-    # The request.description is validated but not used
-    return get_example_analysis()
+    # Create analysis from database data
+    analysis = await analysis_service.create_analysis(db, request.description)
+
+    # Save analysis to database if we have impacted repos
+    if analysis.impactedRepos:
+        await analysis_service.save_analysis(db, analysis)
+
+    return analysis
 
 
 if __name__ == "__main__":
     import sys
 
-    from fastapi import FastAPI
     from fastapi.testclient import TestClient
+
+    # Import the main app to test with full context
+    from nexus_api.main import app
 
     all_validation_failures: list[str] = []
     total_tests = 0
 
-    # Create test app
-    app = FastAPI()
-    app.include_router(router, prefix="/api/v1")
+    # Use main app with lifespan and database
     client = TestClient(app)
 
     # Test 1: POST /api/v1/analysis returns 200

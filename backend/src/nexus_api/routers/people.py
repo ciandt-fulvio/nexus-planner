@@ -1,18 +1,21 @@
 """
 People router for Nexus API.
 
-Provides endpoints for people data.
+Provides endpoints for people data with calculated metrics.
 
 Docs: https://fastapi.tiangolo.com/tutorial/bigger-applications/
+Docs: https://fastapi.tiangolo.com/tutorial/dependencies/
 
 Sample input: GET /api/v1/people
 Expected output: List of Person objects as JSON
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from nexus_api.data.mock_data import get_all_people, get_person_by_id
+from nexus_api.db.database import get_db
 from nexus_api.models.person import Person
+from nexus_api.services import person_service
 
 router = APIRouter(
     prefix="/people",
@@ -21,23 +24,29 @@ router = APIRouter(
 
 
 @router.get("", response_model=list[Person])
-def list_people() -> list[Person]:
+async def list_people(db: AsyncSession = Depends(get_db)) -> list[Person]:
     """
-    Get all people.
+    Get all people with calculated metrics.
 
     Returns a list of all team members with their expertise metrics,
     repositories, technologies, and alerts.
+
+    Database is seeded automatically on startup in development mode.
     """
-    return get_all_people()
+    return await person_service.get_all_people(db)
 
 
 @router.get("/{person_id}", response_model=Person)
-def get_person(person_id: str) -> Person:
+async def get_person(
+    person_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> Person:
     """
-    Get a person by ID.
+    Get a person by ID with calculated metrics.
 
     Args:
         person_id: The person ID to look up.
+        db: Database session from dependency injection.
 
     Returns:
         The person with the given ID.
@@ -45,7 +54,7 @@ def get_person(person_id: str) -> Person:
     Raises:
         HTTPException: 404 if person not found.
     """
-    person = get_person_by_id(person_id)
+    person = await person_service.get_person_by_id(db, person_id)
     if person is None:
         raise HTTPException(status_code=404, detail=f"Person {person_id} not found")
     return person
@@ -54,15 +63,15 @@ def get_person(person_id: str) -> Person:
 if __name__ == "__main__":
     import sys
 
-    from fastapi import FastAPI
     from fastapi.testclient import TestClient
+
+    # Import the main app to test with full context
+    from nexus_api.main import app
 
     all_validation_failures: list[str] = []
     total_tests = 0
 
-    # Create test app
-    app = FastAPI()
-    app.include_router(router, prefix="/api/v1")
+    # Use main app with lifespan and database
     client = TestClient(app)
 
     # Test 1: GET /api/v1/people returns 200
@@ -73,7 +82,7 @@ if __name__ == "__main__":
             f"GET /people status: Expected 200, got {response.status_code}"
         )
 
-    # Test 2: Response is a list of 5 people
+    # Test 2: Response is a list of 5 people (from mock data fallback)
     total_tests += 1
     data = response.json()
     if not isinstance(data, list) or len(data) != 5:

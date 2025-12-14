@@ -10,6 +10,21 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
+## 🔴 CRITICAL SCOPE DEFINITION
+
+**THIS COMMAND EXECUTES THE IMPLEMENTATION - IT DOES NOT GENERATE TASKS**
+
+- ✅ **DO** execute all tasks from tasks.md
+- ✅ **DO** write source code files (models, services, endpoints, tests, etc.)
+- ✅ **DO** run tests and build commands as specified in tasks
+- ✅ **DO** mark tasks as completed in tasks.md
+- ❌ **DO NOT** regenerate or rewrite tasks.md (unless fixing format issues)
+- ❌ **DO NOT** create new tasks beyond what's in tasks.md (unless critical dependencies discovered)
+
+**The task generation is the responsibility of `/speckit.tasks`**
+
+**Prerequisite**: tasks.md MUST exist before running this command. If tasks.md is missing, incomplete, or needs regeneration, run `/speckit.tasks` first.
+
 ## Outline
 
 1. Run `.specify/scripts/bash/check-prerequisites.sh --json --require-tasks --include-tasks` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").

@@ -59,11 +59,11 @@ class TestRepositoryModel:
             activity=ActivityLevel.HIGH,
             knowledgeConcentration=45,
             topContributors=[
-                TopContributor(name="Alice", percentage=60),
-                TopContributor(name="Bob", percentage=40),
+                TopContributor(name="Alice", email="alice@test.com", commits=60, percentage=60),
+                TopContributor(name="Bob", email="bob@test.com", commits=40, percentage=40),
             ],
             hotspots=[
-                Hotspot(path="src/main.ts", changes=50),
+                Hotspot(path="src/main.ts", changes=50, lastModified="2024-01-15", contributors=3),
             ],
             dependencies=["other-repo"],
             alerts=[
@@ -122,15 +122,21 @@ class TestRepositoryModel:
         """Test TopContributor percentage must be 0-100."""
         from nexus_api.models.repository import TopContributor
 
-        contributor = TopContributor(name="Alice", percentage=50)
+        contributor = TopContributor(
+            name="Alice", email="alice@test.com", commits=50, percentage=50
+        )
         assert contributor.percentage == 50
+        assert contributor.commits == 50
 
     def test_hotspot_changes_positive(self) -> None:
         """Test Hotspot changes must be positive."""
         from nexus_api.models.repository import Hotspot
 
-        hotspot = Hotspot(path="src/file.ts", changes=100)
+        hotspot = Hotspot(
+            path="src/file.ts", changes=100, lastModified="2024-01-15", contributors=3
+        )
         assert hotspot.changes == 100
+        assert hotspot.contributors == 3
 
     def test_repository_serialization(self) -> None:
         """Test Repository model serializes to dict correctly."""

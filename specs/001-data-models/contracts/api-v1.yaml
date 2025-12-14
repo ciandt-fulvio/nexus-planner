@@ -1,0 +1,426 @@
+openapi: 3.1.0
+info:
+  title: Nexus Planner API
+  description: API para Git Intelligence Platform
+  version: 1.0.0
+  contact:
+    name: Nexus Planner Team
+
+servers:
+  - url: http://localhost:8000/api/v1
+    description: Development server
+
+paths:
+  /repositories:
+    get:
+      summary: Listar todos os repositórios
+      operationId: listRepositories
+      tags:
+        - Repositories
+      responses:
+        '200':
+          description: Lista de repositórios com métricas calculadas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Repository'
+
+  /repositories/{repositoryId}:
+    get:
+      summary: Obter repositório por ID
+      operationId: getRepository
+      tags:
+        - Repositories
+      parameters:
+        - name: repositoryId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Repositório encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Repository'
+        '404':
+          description: Repositório não encontrado
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /people:
+    get:
+      summary: Listar todas as pessoas
+      operationId: listPeople
+      tags:
+        - People
+      responses:
+        '200':
+          description: Lista de pessoas com métricas calculadas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Person'
+
+  /people/{personId}:
+    get:
+      summary: Obter pessoa por ID
+      operationId: getPerson
+      tags:
+        - People
+      parameters:
+        - name: personId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Pessoa encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '404':
+          description: Pessoa não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /analysis:
+    post:
+      summary: Criar análise de impacto de feature
+      operationId: createAnalysis
+      tags:
+        - Analysis
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AnalysisRequest'
+      responses:
+        '201':
+          description: Análise criada com sucesso
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureAnalysis'
+        '400':
+          description: Requisição inválida
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /analysis/{analysisId}:
+    get:
+      summary: Obter análise por ID
+      operationId: getAnalysis
+      tags:
+        - Analysis
+      parameters:
+        - name: analysisId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Análise encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FeatureAnalysis'
+        '404':
+          description: Análise não encontrada
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Repository:
+      type: object
+      required:
+        - id
+        - name
+        - lastCommit
+        - totalCommits
+        - contributors
+        - activity
+        - knowledgeConcentration
+        - topContributors
+        - hotspots
+        - dependencies
+        - alerts
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+        lastCommit:
+          type: string
+          format: date
+        totalCommits:
+          type: integer
+          minimum: 0
+        contributors:
+          type: integer
+          minimum: 0
+        activity:
+          $ref: '#/components/schemas/ActivityLevel'
+        knowledgeConcentration:
+          type: integer
+          minimum: 0
+          maximum: 100
+        topContributors:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopContributor'
+        hotspots:
+          type: array
+          items:
+            $ref: '#/components/schemas/Hotspot'
+        dependencies:
+          type: array
+          items:
+            type: string
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alert'
+
+    Person:
+      type: object
+      required:
+        - id
+        - name
+        - email
+        - avatar
+        - repositories
+        - technologies
+        - domains
+        - recentActivity
+        - alerts
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        avatar:
+          type: string
+        repositories:
+          type: array
+          items:
+            $ref: '#/components/schemas/PersonRepository'
+        technologies:
+          type: array
+          items:
+            $ref: '#/components/schemas/Technology'
+        domains:
+          type: array
+          items:
+            type: string
+        recentActivity:
+          type: integer
+          minimum: 0
+        alerts:
+          type: array
+          items:
+            $ref: '#/components/schemas/Alert'
+
+    FeatureAnalysis:
+      type: object
+      required:
+        - id
+        - featureDescription
+        - analysisText
+        - createdAt
+      properties:
+        id:
+          type: string
+          format: uuid
+        featureDescription:
+          type: string
+        analysisText:
+          type: string
+          description: Análise em Markdown com links dinâmicos
+        createdAt:
+          type: string
+          format: date-time
+
+    Alert:
+      type: object
+      required:
+        - id
+        - title
+        - description
+        - severity
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          maxLength: 100
+        description:
+          type: string
+          description: Descrição em Markdown com links dinâmicos
+        severity:
+          $ref: '#/components/schemas/AlertSeverity'
+        category:
+          type: string
+          nullable: true
+        suggestedActions:
+          type: string
+          nullable: true
+          description: Ações sugeridas em Markdown
+
+    TopContributor:
+      type: object
+      required:
+        - name
+        - email
+        - commits
+        - percentage
+      properties:
+        name:
+          type: string
+        email:
+          type: string
+          format: email
+        commits:
+          type: integer
+          minimum: 0
+        percentage:
+          type: integer
+          minimum: 0
+          maximum: 100
+
+    Hotspot:
+      type: object
+      required:
+        - path
+        - changes
+        - lastModified
+        - contributors
+      properties:
+        path:
+          type: string
+        changes:
+          type: integer
+          minimum: 0
+        lastModified:
+          type: string
+          format: date
+        contributors:
+          type: integer
+          minimum: 0
+
+    Technology:
+      type: object
+      required:
+        - name
+        - level
+        - filesCount
+        - linesChanged
+      properties:
+        name:
+          type: string
+        level:
+          type: integer
+          minimum: 0
+          maximum: 100
+        filesCount:
+          type: integer
+          minimum: 0
+        linesChanged:
+          type: integer
+          minimum: 0
+
+    PersonRepository:
+      type: object
+      required:
+        - name
+        - repositoryId
+        - commits
+        - lastActivity
+        - expertise
+      properties:
+        name:
+          type: string
+        repositoryId:
+          type: string
+          format: uuid
+        commits:
+          type: integer
+          minimum: 0
+        lastActivity:
+          type: string
+          format: date
+        expertise:
+          type: integer
+          minimum: 0
+          maximum: 100
+
+    ActivityLevel:
+      type: string
+      enum:
+        - high
+        - medium
+        - low
+        - stale
+
+    AlertSeverity:
+      type: string
+      enum:
+        - info
+        - warning
+        - critical
+
+    AnalysisRequest:
+      type: object
+      required:
+        - featureDescription
+      properties:
+        featureDescription:
+          type: string
+          minLength: 10
+          description: Descrição da feature para análise
+
+    Error:
+      type: object
+      required:
+        - detail
+      properties:
+        detail:
+          type: string
+
+tags:
+  - name: Repositories
+    description: Operações sobre repositórios Git
+  - name: People
+    description: Operações sobre desenvolvedores
+  - name: Analysis
+    description: Análise de impacto de features

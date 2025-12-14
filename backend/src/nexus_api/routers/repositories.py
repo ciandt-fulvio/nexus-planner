@@ -1,18 +1,21 @@
 """
 Repositories router for Nexus API.
 
-Provides endpoints for repository data.
+Provides endpoints for repository data with calculated metrics.
 
 Docs: https://fastapi.tiangolo.com/tutorial/bigger-applications/
+Docs: https://fastapi.tiangolo.com/tutorial/dependencies/
 
 Sample input: GET /api/v1/repositories
 Expected output: List of Repository objects as JSON
 """
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession
 
-from nexus_api.data.mock_data import get_all_repositories, get_repository_by_id
+from nexus_api.db.database import get_db
 from nexus_api.models.repository import Repository
+from nexus_api.services import repository_service
 
 router = APIRouter(
     prefix="/repositories",
@@ -21,23 +24,29 @@ router = APIRouter(
 
 
 @router.get("", response_model=list[Repository])
-def list_repositories() -> list[Repository]:
+async def list_repositories(db: AsyncSession = Depends(get_db)) -> list[Repository]:
     """
-    Get all repositories.
+    Get all repositories with calculated metrics.
 
     Returns a list of all repositories with their metrics,
     contributors, hotspots, and alerts.
+
+    Database is seeded automatically on startup in development mode.
     """
-    return get_all_repositories()
+    return await repository_service.get_all_repositories(db)
 
 
 @router.get("/{repo_id}", response_model=Repository)
-def get_repository(repo_id: str) -> Repository:
+async def get_repository(
+    repo_id: str,
+    db: AsyncSession = Depends(get_db),
+) -> Repository:
     """
-    Get a repository by ID.
+    Get a repository by ID with calculated metrics.
 
     Args:
         repo_id: The repository ID to look up.
+        db: Database session from dependency injection.
 
     Returns:
         The repository with the given ID.
@@ -45,7 +54,7 @@ def get_repository(repo_id: str) -> Repository:
     Raises:
         HTTPException: 404 if repository not found.
     """
-    repo = get_repository_by_id(repo_id)
+    repo = await repository_service.get_repository_by_id(db, repo_id)
     if repo is None:
         raise HTTPException(status_code=404, detail=f"Repository {repo_id} not found")
     return repo
@@ -54,15 +63,15 @@ def get_repository(repo_id: str) -> Repository:
 if __name__ == "__main__":
     import sys
 
-    from fastapi import FastAPI
     from fastapi.testclient import TestClient
+
+    # Import the main app to test with full context
+    from nexus_api.main import app
 
     all_validation_failures: list[str] = []
     total_tests = 0
 
-    # Create test app
-    app = FastAPI()
-    app.include_router(router, prefix="/api/v1")
+    # Use main app with lifespan and database
     client = TestClient(app)
 
     # Test 1: GET /api/v1/repositories returns 200
@@ -73,7 +82,7 @@ if __name__ == "__main__":
             f"GET /repositories status: Expected 200, got {response.status_code}"
         )
 
-    # Test 2: Response is a list of 5 repositories
+    # Test 2: Response is a list of 5 repositories (from mock data fallback)
     total_tests += 1
     data = response.json()
     if not isinstance(data, list) or len(data) != 5:
