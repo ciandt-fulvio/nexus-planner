@@ -13,6 +13,8 @@ import pytest_asyncio
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from nexus_api.config import settings
+
 
 @pytest.mark.unit
 @pytest.mark.asyncio
@@ -75,6 +77,10 @@ async def test_commit_service_get_by_repository(
 
 @pytest.mark.unit
 @pytest.mark.asyncio
+@pytest.mark.skipif(
+    settings.use_mock_data,
+    reason="Tests real database logic, skipped when USE_MOCK_DATA=true"
+)
 async def test_repository_service_get_all(db_session: AsyncSession):
     """Test getting all repositories with calculated metrics."""
     from nexus_api.services.repository_service import get_all_repositories
@@ -97,6 +103,10 @@ async def test_repository_service_get_all(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
+@pytest.mark.skipif(
+    settings.use_mock_data,
+    reason="Tests real database logic, skipped when USE_MOCK_DATA=true"
+)
 async def test_repository_service_get_by_id(db_session: AsyncSession):
     """Test getting a repository by ID."""
     from nexus_api.services.repository_service import get_repository_by_id
@@ -130,6 +140,10 @@ async def test_repository_service_get_by_id_not_found(db_session: AsyncSession):
 
 @pytest.mark.unit
 @pytest.mark.asyncio
+@pytest.mark.skipif(
+    settings.use_mock_data,
+    reason="Tests real database logic, skipped when USE_MOCK_DATA=true"
+)
 async def test_repository_service_includes_calculated_fields(db_session: AsyncSession):
     """Test that repository includes calculated fields."""
     from nexus_api.services.repository_service import get_repository_by_id

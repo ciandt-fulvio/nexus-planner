@@ -9,7 +9,7 @@ Sample input: Commit data dict
 Expected output: CommitTable instances or query results
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from sqlalchemy import func, select
@@ -96,7 +96,7 @@ async def get_commits_last_30_days(
     Returns:
         Number of commits in last 30 days
     """
-    thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    thirty_days_ago = datetime.now(UTC) - timedelta(days=30)
 
     stmt = (
         select(func.count())
@@ -204,7 +204,7 @@ async def get_file_change_stats(
 
     # Convert sets to counts
     result = []
-    for path, stats in file_stats.items():
+    for _path, stats in file_stats.items():
         result.append({
             "path": stats["path"],
             "changes": stats["changes"],

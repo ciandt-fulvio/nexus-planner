@@ -9,18 +9,15 @@ Sample input: Repository ID or no filter
 Expected output: Repository Pydantic models with calculated metrics
 """
 
-from datetime import date
-from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from nexus_api.config import settings
 from nexus_api.data import mock_data
-from nexus_api.db.tables import CommitTable, RepositoryTable
-from nexus_api.models.repository import ActivityLevel, Hotspot, Repository, TopContributor
-from nexus_api.services import commit_service
-from nexus_api.services import alert_service
+from nexus_api.db.tables import RepositoryTable
+from nexus_api.models.repository import Repository
+from nexus_api.services import alert_service, commit_service
 from nexus_api.services.metrics import (
     calculate_activity_level,
     calculate_hotspots,

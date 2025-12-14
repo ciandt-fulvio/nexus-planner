@@ -11,7 +11,7 @@ Expected output: FeatureAnalysis Pydantic model
 """
 
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -41,7 +41,7 @@ async def _get_active_repositories(
     Returns:
         List of dicts with repo info and commit counts
     """
-    thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    thirty_days_ago = datetime.now(UTC) - timedelta(days=30)
 
     stmt = (
         select(
@@ -77,7 +77,7 @@ async def _get_active_contributors(
     Returns:
         List of dicts with contributor info and commit counts
     """
-    thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    thirty_days_ago = datetime.now(UTC) - timedelta(days=30)
 
     stmt = (
         select(

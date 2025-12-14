@@ -13,7 +13,7 @@ Sample input: Repository or Person ID
 Expected output: List of Alert Pydantic models
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -68,14 +68,14 @@ async def generate_alerts_for_repository(
         return alerts
 
     # Check for stale repository (no commits in last 30 days)
-    thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    thirty_days_ago = datetime.now(UTC) - timedelta(days=30)
     recent_commits = []
     for c in commits:
         if c.commit_date:
             # Handle both naive and aware datetimes
             commit_dt = c.commit_date
             if commit_dt.tzinfo is None:
-                commit_dt = commit_dt.replace(tzinfo=timezone.utc)
+                commit_dt = commit_dt.replace(tzinfo=UTC)
             if commit_dt >= thirty_days_ago:
                 recent_commits.append(c)
 
@@ -207,7 +207,7 @@ async def generate_alerts_for_person(
             )
 
     # Check for recent activity
-    thirty_days_ago = datetime.now(timezone.utc) - timedelta(days=30)
+    thirty_days_ago = datetime.now(UTC) - timedelta(days=30)
     recent_stmt = (
         select(func.count())
         .select_from(CommitTable)

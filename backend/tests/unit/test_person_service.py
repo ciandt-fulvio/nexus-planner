@@ -11,9 +11,14 @@ from datetime import datetime, timedelta, timezone
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from nexus_api.db.tables import CommitTable, PersonTable, RepositoryTable
+from nexus_api.config import settings
 
 
 @pytest.mark.unit
+@pytest.mark.skipif(
+    settings.use_mock_data,
+    reason="These tests verify real database logic, skipped when USE_MOCK_DATA=true"
+)
 class TestPersonServiceIntegration:
     """Tests for person_service integration with database."""
 
