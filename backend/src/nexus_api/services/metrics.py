@@ -165,66 +165,43 @@ if __name__ == "__main__":
     import sys
     from datetime import date
 
-    all_failures: list[str] = []
-    total_tests = 0
+    from nexus_api.testing.validation_helpers import ValidationHelper
 
-    # Test 1: Activity level high
-    total_tests += 1
-    result = calculate_activity_level(35)
-    if result != ActivityLevel.HIGH:
-        all_failures.append(f"Activity HIGH: Expected HIGH, got {result}")
+    validator = ValidationHelper()
 
-    # Test 2: Activity level medium
-    total_tests += 1
-    result = calculate_activity_level(15)
-    if result != ActivityLevel.MEDIUM:
-        all_failures.append(f"Activity MEDIUM: Expected MEDIUM, got {result}")
-
-    # Test 3: Activity level low
-    total_tests += 1
-    result = calculate_activity_level(5)
-    if result != ActivityLevel.LOW:
-        all_failures.append(f"Activity LOW: Expected LOW, got {result}")
-
-    # Test 4: Activity level stale
-    total_tests += 1
-    result = calculate_activity_level(0)
-    if result != ActivityLevel.STALE:
-        all_failures.append(f"Activity STALE: Expected STALE, got {result}")
+    # Test 1-4: Activity levels
+    validator.add_test("Activity HIGH", lambda: calculate_activity_level(35), ActivityLevel.HIGH)
+    validator.add_test("Activity MEDIUM", lambda: calculate_activity_level(15), ActivityLevel.MEDIUM)
+    validator.add_test("Activity LOW", lambda: calculate_activity_level(5), ActivityLevel.LOW)
+    validator.add_test("Activity STALE", lambda: calculate_activity_level(0), ActivityLevel.STALE)
 
     # Test 5: Knowledge concentration
-    total_tests += 1
-    contributors = [{"author_email": "alice@test.com", "count": 75}]
-    result = calculate_knowledge_concentration(contributors, 100)
-    if result != 75:
-        all_failures.append(f"Concentration: Expected 75, got {result}")
+    validator.add_test(
+        "Knowledge concentration",
+        lambda: calculate_knowledge_concentration([{"author_email": "alice@test.com", "count": 75}], 100),
+        75,
+    )
 
     # Test 6: Top contributors
-    total_tests += 1
-    contributors = [
-        {"author_email": "alice@test.com", "author_name": "Alice", "count": 50},
-        {"author_email": "bob@test.com", "author_name": "Bob", "count": 30},
-    ]
-    result = calculate_top_contributors(contributors, 100, limit=2)
-    if len(result) != 2 or result[0].name != "Alice":
-        all_failures.append(f"Top contributors: Expected 2 with Alice first, got {result}")
+    def test_top_contributors():
+        contributors = [
+            {"author_email": "alice@test.com", "author_name": "Alice", "count": 50},
+            {"author_email": "bob@test.com", "author_name": "Bob", "count": 30},
+        ]
+        result = calculate_top_contributors(contributors, 100, limit=2)
+        return (len(result), result[0].name)
+
+    validator.add_test("Top contributors", test_top_contributors, (2, "Alice"))
 
     # Test 7: Hotspots
-    total_tests += 1
-    files = [
-        {"path": "a.py", "changes": 50, "last_modified": date(2024, 1, 15), "contributors": 5},
-        {"path": "b.py", "changes": 30, "last_modified": date(2024, 1, 10), "contributors": 3},
-    ]
-    result = calculate_hotspots(files, limit=2)
-    if len(result) != 2 or result[0].path != "a.py":
-        all_failures.append(f"Hotspots: Expected 2 with a.py first, got {result}")
+    def test_hotspots():
+        files = [
+            {"path": "a.py", "changes": 50, "last_modified": date(2024, 1, 15), "contributors": 5},
+            {"path": "b.py", "changes": 30, "last_modified": date(2024, 1, 10), "contributors": 3},
+        ]
+        result = calculate_hotspots(files, limit=2)
+        return (len(result), result[0].path)
 
-    # Final result
-    if all_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_failures)} of {total_tests} tests failed:")
-        for failure in all_failures:
-            print(f"  - {failure}")
-        sys.exit(1)
-    else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
-        sys.exit(0)
+    validator.add_test("Hotspots", test_hotspots, (2, "a.py"))
+
+    sys.exit(validator.run())

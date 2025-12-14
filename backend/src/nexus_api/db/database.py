@@ -72,44 +72,33 @@ if __name__ == "__main__":
     import asyncio
     import sys
 
-    async def validate() -> list[str]:
-        """Validate database module functionality."""
-        failures: list[str] = []
+    from nexus_api.testing.validation_helpers import ValidationHelper
 
-        # Test 1: Engine is async engine
-        if not hasattr(engine, "dialect"):
-            failures.append("Engine: Missing dialect attribute")
+    validator = ValidationHelper()
 
-        # Test 2: Engine uses aiosqlite
-        if "aiosqlite" not in str(engine.url):
-            failures.append(f"Engine dialect: Expected aiosqlite, got {engine.url}")
+    # Test 1: Engine has dialect
+    validator.add_test("Engine has dialect", lambda: hasattr(engine, "dialect"), True)
 
-        # Test 3: Session factory creates sessions
+    # Test 2: Engine uses aiosqlite
+    validator.add_test("Engine uses aiosqlite", lambda: "aiosqlite" in str(engine.url), True)
+
+    # Test 3: Session factory creates AsyncSession
+    async def test_session_factory():
         async with async_session() as session:
-            if not isinstance(session, AsyncSession):
-                failures.append(f"Session: Expected AsyncSession, got {type(session)}")
+            return isinstance(session, AsyncSession)
 
-        # Test 4: get_db yields session
+    validator.add_test("Session factory creates AsyncSession", lambda: asyncio.run(test_session_factory()), True)
+
+    # Test 4: get_db yields exactly one session
+    async def test_get_db():
         sessions = []
         async for session in get_db():
             sessions.append(session)
-        if len(sessions) != 1:
-            failures.append(f"get_db: Expected 1 session, got {len(sessions)}")
+        return len(sessions)
 
-        # Test 5: Base has metadata
-        if not hasattr(Base, "metadata"):
-            failures.append("Base: Missing metadata attribute")
+    validator.add_test("get_db yields one session", lambda: asyncio.run(test_get_db()), 1)
 
-        return failures
+    # Test 5: Base has metadata
+    validator.add_test("Base has metadata", lambda: hasattr(Base, "metadata"), True)
 
-    all_failures = asyncio.run(validate())
-    total_tests = 5
-
-    if all_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_failures)} of {total_tests} tests failed:")
-        for failure in all_failures:
-            print(f"  - {failure}")
-        sys.exit(1)
-    else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
-        sys.exit(0)
+    sys.exit(validator.run())

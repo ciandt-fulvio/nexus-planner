@@ -514,65 +514,47 @@ def get_example_analysis() -> FeatureAnalysis:
 if __name__ == "__main__":
     import sys
 
-    all_validation_failures: list[str] = []
-    total_tests = 0
+    from nexus_api.testing.validation_helpers import ValidationHelper
+
+    validator = ValidationHelper()
 
     # Test 1: Get all repositories returns 5
-    total_tests += 1
-    repos = get_all_repositories()
-    if len(repos) != 5:
-        all_validation_failures.append(
-            f"get_all_repositories: Expected 5 repos, got {len(repos)}")
+    validator.add_test("get_all_repositories count", lambda: len(get_all_repositories()), 5)
 
     # Test 2: First repo is reports-service
-    total_tests += 1
-    first_repo = repos[0]
-    if first_repo.name != "reports-service":
-        all_validation_failures.append(
-            f"First repo: Expected 'reports-service', got '{first_repo.name}'"
-        )
+    validator.add_test(
+        "First repo name",
+        lambda: get_all_repositories()[0].name,
+        "reports-service",
+    )
 
     # Test 3: Get repository by ID
-    total_tests += 1
-    repo = get_repository_by_id("1")
-    if repo is None or repo.name != "reports-service":
-        all_validation_failures.append(
-            f"get_repository_by_id('1'): Expected 'reports-service', got {repo}"
-        )
+    def test_get_by_id():
+        repo = get_repository_by_id("1")
+        return repo.name if repo else None
+
+    validator.add_test("get_repository_by_id('1')", test_get_by_id, "reports-service")
 
     # Test 4: Get repository by invalid ID returns None
-    total_tests += 1
-    repo = get_repository_by_id("999")
-    if repo is not None:
-        all_validation_failures.append(
-            f"get_repository_by_id('999'): Expected None, got {repo}")
+    validator.add_test("get_repository_by_id('999')", lambda: get_repository_by_id("999"), None)
 
-    # Test 5: Repository data matches frontend mock
-    total_tests += 1
-    repo = get_repository_by_id("1")
-    if repo:
-        if repo.totalCommits != 847:
-            all_validation_failures.append(
-                f"reports-service totalCommits: Expected 847, got {repo.totalCommits}"
-            )
-        if len(repo.topContributors) != 3:
-            all_validation_failures.append(
-                f"reports-service topContributors: Expected 3, got {len(repo.topContributors)}"
-            )
-        if repo.topContributors[0].name != "Ana Silva":
-            all_validation_failures.append(
-                f"reports-service first contributor: Expected 'Ana Silva', got '{repo.topContributors[0].name}'"
-            )
+    # Test 5-7: Repository data matches frontend mock
+    def test_repo_commits():
+        repo = get_repository_by_id("1")
+        return repo.totalCommits if repo else None
 
-    # Final validation result
-    if all_validation_failures:
-        print(
-            f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:"
-        )
-        for failure in all_validation_failures:
-            print(f"  - {failure}")
-        sys.exit(1)
-    else:
-        print(
-            f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
-        sys.exit(0)
+    validator.add_test("reports-service totalCommits", test_repo_commits, 847)
+
+    def test_repo_contributors_count():
+        repo = get_repository_by_id("1")
+        return len(repo.topContributors) if repo else None
+
+    validator.add_test("reports-service topContributors count", test_repo_contributors_count, 3)
+
+    def test_repo_first_contributor():
+        repo = get_repository_by_id("1")
+        return repo.topContributors[0].name if repo and repo.topContributors else None
+
+    validator.add_test("reports-service first contributor", test_repo_first_contributor, "Ana Silva")
+
+    sys.exit(validator.run())
