@@ -19,6 +19,20 @@ $ARGUMENTS
 
 You **MUST** consider the user input before proceeding (if not empty).
 
+## 🔴 CRITICAL SCOPE RESTRICTIONS
+
+**THIS COMMAND ONLY GENERATES THE TASKS.MD FILE - IT DOES NOT IMPLEMENT CODE**
+
+- ❌ **DO NOT** write any source code files
+- ❌ **DO NOT** create models, services, endpoints, or any implementation files
+- ❌ **DO NOT** execute any implementation tasks
+- ❌ **DO NOT** run tests or build commands
+- ✅ **ONLY** read design documents (plan.md, spec.md, data-model.md, contracts/, etc.)
+- ✅ **ONLY** generate the tasks.md file with the task list
+- ✅ **ONLY** report the summary of generated tasks
+
+**The actual implementation is the responsibility of `/speckit.implement`**
+
 ## Outline
 
 1. **Setup**: Run `.specify/scripts/bash/check-prerequisites.sh --json` from repo root and parse FEATURE_DIR and AVAILABLE_DOCS list. All paths must be absolute. For single quotes in args like "I'm Groot", use escape syntax: e.g 'I'\''m Groot' (or double-quote if possible: "I'm Groot").
@@ -63,6 +77,17 @@ You **MUST** consider the user input before proceeding (if not empty).
 Context for task generation: $ARGUMENTS
 
 The tasks.md should be immediately executable - each task must be specific enough that an LLM can complete it without additional context.
+
+## 🔴 REMINDER: THIS COMMAND STOPS AFTER GENERATING TASKS.MD
+
+**After completing steps 1-5 above, STOP immediately.**
+
+- Do NOT proceed to implementation
+- Do NOT create any code files
+- Do NOT execute any tasks from the generated tasks.md
+- The user will run `/speckit.implement` separately to execute the implementation
+
+Your job is complete when tasks.md is written and the summary is reported.
 
 ## Task Generation Rules
 
