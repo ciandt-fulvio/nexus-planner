@@ -83,10 +83,26 @@ uv run python -m nexus_api.main            # Validate main.py
 ### Validation Functions
 
 - Every file needs `if __name__ == "__main__"` block testing with real data
+- **USE ValidationHelper** from `testing.validation_helpers` module (consolidated pattern)
 - Must track ALL failures, report count, exit with code 1 if any fail
 - Never print "All Tests Passed" unless explicitly verified
 
-**Example Pattern**:
+**ValidationHelper Pattern (RECOMMENDED)**:
+```python
+if __name__ == "__main__":
+    import sys
+    from nexus_api.testing.validation_helpers import ValidationHelper
+
+    validator = ValidationHelper()
+
+    # Add tests using lambda or functions
+    validator.add_test("Test name", lambda: some_function(test_data), expected_value)
+    validator.add_test("Another test", test_function, expected_result)
+
+    sys.exit(validator.run())  # Exits 0 if all pass, 1 if any fail
+```
+
+**Legacy Pattern (before ValidationHelper)**:
 ```python
 if __name__ == "__main__":
     import sys

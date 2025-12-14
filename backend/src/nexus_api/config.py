@@ -80,166 +80,90 @@ settings = Settings()
 if __name__ == "__main__":
     import sys
 
-    all_validation_failures: list[str] = []
-    total_tests = 0
+    from nexus_api.testing.validation_helpers import ValidationHelper
 
-    # Test 1: All required variables present and correct types
-    total_tests += 1
-    try:
-        test_settings = Settings(
-            host="0.0.0.0",
-            port=8000,
-            debug=True,
-            cors_origins="http://localhost:8080",
-            api_v1_prefix="/api/v1",
-            database_url="sqlite+aiosqlite:///test.db",
-            use_mock_data=True,
-            auto_seed=True,
-            window_size=300,
-            activity_high_threshold=30,
-            activity_medium_threshold=10,
-            activity_low_threshold=1,
-            concentration_warning_threshold=50,
-            concentration_critical_threshold=70,
-            top_contributors_limit=3,
-            top_hotspots_limit=5,
-        )
-        if test_settings.host != "0.0.0.0":
-            all_validation_failures.append(
-                f"Host: Expected '0.0.0.0', got '{test_settings.host}'"
-            )
-        if test_settings.port != 8000:
-            all_validation_failures.append(f"Port: Expected 8000, got {test_settings.port}")
-        if test_settings.debug != True:
-            all_validation_failures.append(f"Debug: Expected True, got {test_settings.debug}")
-    except Exception as e:
-        all_validation_failures.append(f"Settings load failed: {e}")
+    validator = ValidationHelper()
 
-    # Test 2: USE_MOCK_DATA can be true or false
-    total_tests += 1
-    try:
-        test_settings_real = Settings(
-            host="0.0.0.0",
-            port=8000,
-            debug=False,
-            cors_origins="http://example.com",
-            api_v1_prefix="/api/v1",
-            database_url="postgresql://user:pass@localhost/db",
-            use_mock_data=False,
-            auto_seed=False,
-            window_size=300,
-            activity_high_threshold=30,
-            activity_medium_threshold=10,
-            activity_low_threshold=1,
-            concentration_warning_threshold=50,
-            concentration_critical_threshold=70,
-            top_contributors_limit=3,
-            top_hotspots_limit=5,
-        )
-        if test_settings_real.use_mock_data != False:
-            all_validation_failures.append(
-                f"USE_MOCK_DATA false: Expected False, got {test_settings_real.use_mock_data}"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"USE_MOCK_DATA false test failed: {e}")
+    # Helper function to create default settings
+    def create_settings(**overrides):
+        defaults = {
+            "host": "0.0.0.0",
+            "port": 8000,
+            "debug": True,
+            "cors_origins": "http://localhost:8080",
+            "api_v1_prefix": "/api/v1",
+            "database_url": "sqlite+aiosqlite:///test.db",
+            "use_mock_data": True,
+            "auto_seed": True,
+            "window_size": 300,
+            "activity_high_threshold": 30,
+            "activity_medium_threshold": 10,
+            "activity_low_threshold": 1,
+            "concentration_warning_threshold": 50,
+            "concentration_critical_threshold": 70,
+            "top_contributors_limit": 3,
+            "top_hotspots_limit": 5,
+        }
+        defaults.update(overrides)
+        return Settings(**defaults)
 
-    # Test 3: CORS origins parsing
-    total_tests += 1
-    try:
-        test_settings = Settings(
-            host="0.0.0.0",
-            port=8000,
-            debug=True,
-            cors_origins="http://localhost:3000,http://localhost:8080",
-            api_v1_prefix="/api/v1",
-            database_url="sqlite+aiosqlite:///test.db",
-            use_mock_data=True,
-            auto_seed=True,
-            window_size=300,
-            activity_high_threshold=30,
-            activity_medium_threshold=10,
-            activity_low_threshold=1,
-            concentration_warning_threshold=50,
-            concentration_critical_threshold=70,
-            top_contributors_limit=3,
-            top_hotspots_limit=5,
-        )
-        expected_origins = ["http://localhost:3000", "http://localhost:8080"]
-        if test_settings.cors_origins_list != expected_origins:
-            all_validation_failures.append(
-                f"CORS parsing: Expected {expected_origins}, got {test_settings.cors_origins_list}"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"CORS parsing failed: {e}")
+    # Test 1: Basic settings load correctly
+    validator.add_test(
+        "Settings host",
+        lambda: (s := create_settings(), s.host)[1],
+        "0.0.0.0",
+    )
 
-    # Test 4: AUTO_SEED can be true or false
-    total_tests += 1
-    try:
-        test_settings_no_seed = Settings(
-            host="0.0.0.0",
-            port=8000,
-            debug=False,
-            cors_origins="http://example.com",
-            api_v1_prefix="/api/v1",
-            database_url="postgresql://user:pass@localhost/db",
-            use_mock_data=False,
-            auto_seed=False,
-            window_size=300,
-            activity_high_threshold=30,
-            activity_medium_threshold=10,
-            activity_low_threshold=1,
-            concentration_warning_threshold=50,
-            concentration_critical_threshold=70,
-            top_contributors_limit=3,
-            top_hotspots_limit=5,
-        )
-        if test_settings_no_seed.auto_seed != False:
-            all_validation_failures.append(
-                f"AUTO_SEED false: Expected False, got {test_settings_no_seed.auto_seed}"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"AUTO_SEED false test failed: {e}")
+    # Test 2: Port is correct type
+    validator.add_test(
+        "Settings port",
+        lambda: (s := create_settings(), s.port)[1],
+        8000,
+    )
 
-    # Test 5: All threshold values are required
-    total_tests += 1
-    try:
-        test_settings = Settings(
-            host="0.0.0.0",
-            port=8000,
-            debug=True,
-            cors_origins="http://localhost:8080",
-            api_v1_prefix="/api/v1",
-            database_url="sqlite+aiosqlite:///test.db",
-            use_mock_data=True,
-            auto_seed=True,
-            window_size=500,
-            activity_high_threshold=45,
-            activity_medium_threshold=15,
-            activity_low_threshold=2,
-            concentration_warning_threshold=55,
-            concentration_critical_threshold=80,
-            top_contributors_limit=5,
-            top_hotspots_limit=8,
-        )
-        if test_settings.activity_high_threshold != 45:
-            all_validation_failures.append(
-                f"Activity high: Expected 45, got {test_settings.activity_high_threshold}"
-            )
-        if test_settings.top_contributors_limit != 5:
-            all_validation_failures.append(
-                f"Top contributors: Expected 5, got {test_settings.top_contributors_limit}"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"Threshold settings test failed: {e}")
+    # Test 3: Debug flag works
+    validator.add_test(
+        "Settings debug",
+        lambda: (s := create_settings(), s.debug)[1],
+        True,
+    )
 
-    # Final validation result
-    if all_validation_failures:
-        print(
-            f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:"
-        )
-        for failure in all_validation_failures:
-            print(f"  - {failure}")
-        sys.exit(1)
-    else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
-        sys.exit(0)
+    # Test 4: USE_MOCK_DATA=false works
+    validator.add_test(
+        "USE_MOCK_DATA false",
+        lambda: (s := create_settings(use_mock_data=False), s.use_mock_data)[1],
+        False,
+    )
+
+    # Test 5: CORS origins parsing
+    validator.add_test(
+        "CORS origins parsing",
+        lambda: (
+            s := create_settings(cors_origins="http://localhost:3000,http://localhost:8080"),
+            s.cors_origins_list,
+        )[1],
+        ["http://localhost:3000", "http://localhost:8080"],
+    )
+
+    # Test 6: AUTO_SEED=false works
+    validator.add_test(
+        "AUTO_SEED false",
+        lambda: (s := create_settings(auto_seed=False), s.auto_seed)[1],
+        False,
+    )
+
+    # Test 7: Custom threshold values
+    validator.add_test(
+        "Activity high threshold",
+        lambda: (s := create_settings(activity_high_threshold=45), s.activity_high_threshold)[1],
+        45,
+    )
+
+    # Test 8: Top contributors limit
+    validator.add_test(
+        "Top contributors limit",
+        lambda: (s := create_settings(top_contributors_limit=5), s.top_contributors_limit)[1],
+        5,
+    )
+
+    sys.exit(validator.run())

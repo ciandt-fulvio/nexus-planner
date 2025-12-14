@@ -66,91 +66,78 @@ class Person(BaseModel):
 if __name__ == "__main__":
     import sys
 
-    all_validation_failures: list[str] = []
-    total_tests = 0
+    from nexus_api.models import AlertType
+    from nexus_api.testing.validation_helpers import ValidationHelper
+
+    validator = ValidationHelper()
 
     # Test 1: PersonRepository creation
-    total_tests += 1
-    try:
-        repo = PersonRepository(
-            name="test-repo",
-            commits=100,
-            lastActivity="2024-01-15",
-            expertise=85,
-        )
-        if repo.name != "test-repo" or repo.expertise != 85:
-            all_validation_failures.append(
-                f"PersonRepository: Expected test-repo/85, got {repo.name}/{repo.expertise}"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"PersonRepository test failed: {e}")
+    validator.add_test(
+        "PersonRepository creation",
+        lambda: (
+            repo := PersonRepository(
+                name="test-repo",
+                commits=100,
+                lastActivity="2024-01-15",
+                expertise=85,
+            ),
+            (repo.name, repo.expertise),
+        )[1],
+        ("test-repo", 85),
+    )
 
     # Test 2: Technology creation
-    total_tests += 1
-    try:
-        tech = Technology(name="Python", level=90)
-        if tech.name != "Python" or tech.level != 90:
-            all_validation_failures.append(
-                f"Technology: Expected Python/90, got {tech.name}/{tech.level}"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"Technology test failed: {e}")
+    validator.add_test(
+        "Technology creation",
+        lambda: (
+            tech := Technology(name="Python", level=90),
+            (tech.name, tech.level),
+        )[1],
+        ("Python", 90),
+    )
 
     # Test 3: Person creation with all fields
-    total_tests += 1
-    try:
-        from nexus_api.models import AlertType
-
-        person = Person(
-            id="1",
-            name="Ana Silva",
-            email="ana.silva@company.com",
-            avatar="AS",
-            repositories=[
-                PersonRepository(name="repo", commits=10, lastActivity="2024-01-01", expertise=80)
-            ],
-            technologies=[Technology(name="TypeScript", level=95)],
-            domains=["Relatórios"],
-            recentActivity=47,
-            alerts=[Alert(type=AlertType.INFO, message="Test")],
-        )
-        if person.id != "1" or person.name != "Ana Silva":
-            all_validation_failures.append(
-                f"Person: Expected id=1/name=Ana Silva, got {person.id}/{person.name}"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"Person creation test failed: {e}")
+    validator.add_test(
+        "Person creation",
+        lambda: (
+            person := Person(
+                id="1",
+                name="Ana Silva",
+                email="ana.silva@company.com",
+                avatar="AS",
+                repositories=[
+                    PersonRepository(
+                        name="repo", commits=10, lastActivity="2024-01-01", expertise=80
+                    )
+                ],
+                technologies=[Technology(name="TypeScript", level=95)],
+                domains=["Relatórios"],
+                recentActivity=47,
+                alerts=[Alert(type=AlertType.INFO, message="Test")],
+            ),
+            (person.id, person.name),
+        )[1],
+        ("1", "Ana Silva"),
+    )
 
     # Test 4: Person serialization
-    total_tests += 1
-    try:
-        person = Person(
-            id="1",
-            name="Test",
-            email="test@example.com",
-            avatar="TE",
-            repositories=[],
-            technologies=[],
-            domains=[],
-            recentActivity=0,
-            alerts=[],
-        )
-        data = person.model_dump()
-        if data["id"] != "1" or data["email"] != "test@example.com":
-            all_validation_failures.append(
-                f"Person serialization: Expected id=1/email=test@example.com, got {data['id']}/{data['email']}"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"Person serialization test failed: {e}")
+    validator.add_test(
+        "Person serialization",
+        lambda: (
+            data := Person(
+                id="1",
+                name="Test",
+                email="test@example.com",
+                avatar="TE",
+                repositories=[],
+                technologies=[],
+                domains=[],
+                recentActivity=0,
+                alerts=[],
+            ).model_dump(),
+            (data["id"], data["email"]),
+        )[1],
+        ("1", "test@example.com"),
+    )
 
-    # Final validation result
-    if all_validation_failures:
-        print(
-            f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:"
-        )
-        for failure in all_validation_failures:
-            print(f"  - {failure}")
-        sys.exit(1)
-    else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
-        sys.exit(0)
+    sys.exit(validator.run())

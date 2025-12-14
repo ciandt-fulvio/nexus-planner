@@ -58,71 +58,49 @@ if __name__ == "__main__":
 
     from fastapi.testclient import TestClient
 
-    # Import the main app to test with full context
     from nexus_api.main import app
+    from nexus_api.testing.validation_helpers import ValidationHelper
 
-    all_validation_failures: list[str] = []
-    total_tests = 0
-
-    # Use main app with lifespan and database
+    validator = ValidationHelper()
     client = TestClient(app)
 
     # Test 1: POST /api/v1/analysis returns 200
-    total_tests += 1
-    response = client.post(
-        "/api/v1/analysis",
-        json={"description": "Test feature"},
+    validator.add_test(
+        "POST /analysis status",
+        lambda: client.post("/api/v1/analysis", json={"description": "Test feature"}).status_code,
+        200,
     )
-    if response.status_code != 200:
-        all_validation_failures.append(
-            f"POST /analysis status: Expected 200, got {response.status_code}"
-        )
 
     # Test 2: Response contains expected fields
-    total_tests += 1
-    data = response.json()
-    required_fields = ["feature", "impactedRepos", "recommendedPeople", "risks", "suggestedOrder"]
-    missing = [f for f in required_fields if f not in data]
-    if missing:
-        all_validation_failures.append(f"Response missing fields: {missing}")
+    def test_response_fields():
+        data = client.post("/api/v1/analysis", json={"description": "Test feature"}).json()
+        required_fields = ["feature", "impactedRepos", "recommendedPeople", "risks", "suggestedOrder"]
+        missing = [f for f in required_fields if f not in data]
+        return len(missing) == 0
 
-    # Test 3: Response contains impacted repos
-    total_tests += 1
-    if "impactedRepos" in data and len(data["impactedRepos"]) != 4:
-        all_validation_failures.append(
-            f"impactedRepos count: Expected 4, got {len(data['impactedRepos'])}"
-        )
+    validator.add_test("Response has required fields", test_response_fields, True)
+
+    # Test 3: Response contains 4 impacted repos
+    validator.add_test(
+        "impactedRepos count",
+        lambda: len(
+            client.post("/api/v1/analysis", json={"description": "Test feature"}).json()["impactedRepos"]
+        ),
+        4,
+    )
 
     # Test 4: Empty description returns 422
-    total_tests += 1
-    response = client.post(
-        "/api/v1/analysis",
-        json={"description": ""},
+    validator.add_test(
+        "Empty description status",
+        lambda: client.post("/api/v1/analysis", json={"description": ""}).status_code,
+        422,
     )
-    if response.status_code != 422:
-        all_validation_failures.append(
-            f"Empty description status: Expected 422, got {response.status_code}"
-        )
 
     # Test 5: Whitespace description returns 422
-    total_tests += 1
-    response = client.post(
-        "/api/v1/analysis",
-        json={"description": "   "},
+    validator.add_test(
+        "Whitespace description status",
+        lambda: client.post("/api/v1/analysis", json={"description": "   "}).status_code,
+        422,
     )
-    if response.status_code != 422:
-        all_validation_failures.append(
-            f"Whitespace description status: Expected 422, got {response.status_code}"
-        )
 
-    # Final validation result
-    if all_validation_failures:
-        print(
-            f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:"
-        )
-        for failure in all_validation_failures:
-            print(f"  - {failure}")
-        sys.exit(1)
-    else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
-        sys.exit(0)
+    sys.exit(validator.run())

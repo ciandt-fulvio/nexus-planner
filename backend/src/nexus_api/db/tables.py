@@ -188,111 +188,73 @@ class FeatureAnalysisTable(Base):
 
 if __name__ == "__main__":
     import sys
+
     from sqlalchemy import inspect
 
-    all_failures: list[str] = []
-    total_tests = 0
+    from nexus_api.testing.validation_helpers import ValidationHelper
 
-    # Test 1: CommitTable exists and has correct name
-    total_tests += 1
-    if CommitTable.__tablename__ != "commits":
-        all_failures.append(
-            f"CommitTable name: Expected 'commits', got '{CommitTable.__tablename__}'"
-        )
+    validator = ValidationHelper()
 
-    # Test 2: CommitTable has all required columns
-    total_tests += 1
-    mapper = inspect(CommitTable)
-    commit_columns = [c.key for c in mapper.columns]
-    required_commit_cols = [
-        "id", "repository_id", "author_name", "author_email",
-        "committer_name", "committer_email", "author_date", "commit_date",
-        "message", "files_changed", "additions", "deletions", "parent_shas"
-    ]
-    for col in required_commit_cols:
-        if col not in commit_columns:
-            all_failures.append(f"CommitTable missing column: {col}")
+    # Helper to check if table has all required columns
+    def has_all_columns(table, required_cols):
+        mapper = inspect(table)
+        actual_cols = {c.key for c in mapper.columns}
+        return all(col in actual_cols for col in required_cols)
 
-    # Test 3: RepositoryTable exists and has correct name
-    total_tests += 1
-    if RepositoryTable.__tablename__ != "repositories":
-        all_failures.append(
-            f"RepositoryTable name: Expected 'repositories', got '{RepositoryTable.__tablename__}'"
-        )
+    # Test table names
+    validator.add_test("CommitTable name", lambda: CommitTable.__tablename__, "commits")
+    validator.add_test("RepositoryTable name", lambda: RepositoryTable.__tablename__, "repositories")
+    validator.add_test("PersonTable name", lambda: PersonTable.__tablename__, "persons")
+    validator.add_test("AlertTable name", lambda: AlertTable.__tablename__, "alerts")
+    validator.add_test("FeatureAnalysisTable name", lambda: FeatureAnalysisTable.__tablename__, "feature_analyses")
 
-    # Test 4: RepositoryTable has all required columns
-    total_tests += 1
-    mapper = inspect(RepositoryTable)
-    repo_columns = [c.key for c in mapper.columns]
-    required_repo_cols = [
-        "id", "name", "description", "git_url",
-        "last_alerts_pr_id", "created_at", "updated_at"
-    ]
-    for col in required_repo_cols:
-        if col not in repo_columns:
-            all_failures.append(f"RepositoryTable missing column: {col}")
+    # Test table columns
+    validator.add_test(
+        "CommitTable has required columns",
+        lambda: has_all_columns(
+            CommitTable,
+            ["id", "repository_id", "author_name", "author_email", "committer_name",
+             "committer_email", "author_date", "commit_date", "message", "files_changed",
+             "additions", "deletions", "parent_shas"]
+        ),
+        True,
+    )
 
-    # Test 5: PersonTable exists and has correct name
-    total_tests += 1
-    if PersonTable.__tablename__ != "persons":
-        all_failures.append(
-            f"PersonTable name: Expected 'persons', got '{PersonTable.__tablename__}'"
-        )
+    validator.add_test(
+        "RepositoryTable has required columns",
+        lambda: has_all_columns(
+            RepositoryTable,
+            ["id", "name", "description", "git_url", "last_alerts_pr_id", "created_at", "updated_at"]
+        ),
+        True,
+    )
 
-    # Test 6: PersonTable has all required columns
-    total_tests += 1
-    mapper = inspect(PersonTable)
-    person_columns = [c.key for c in mapper.columns]
-    required_person_cols = [
-        "id", "email", "name", "avatar",
-        "last_alert_commit_sha", "created_at", "updated_at"
-    ]
-    for col in required_person_cols:
-        if col not in person_columns:
-            all_failures.append(f"PersonTable missing column: {col}")
+    validator.add_test(
+        "PersonTable has required columns",
+        lambda: has_all_columns(
+            PersonTable,
+            ["id", "email", "name", "avatar", "last_alert_commit_sha", "created_at", "updated_at"]
+        ),
+        True,
+    )
 
-    # Test 7: AlertTable exists and has correct name
-    total_tests += 1
-    if AlertTable.__tablename__ != "alerts":
-        all_failures.append(
-            f"AlertTable name: Expected 'alerts', got '{AlertTable.__tablename__}'"
-        )
+    validator.add_test(
+        "AlertTable has required columns",
+        lambda: has_all_columns(
+            AlertTable,
+            ["id", "entity_type", "entity_id", "reference_id", "title", "description",
+             "severity", "category", "suggested_actions", "created_at"]
+        ),
+        True,
+    )
 
-    # Test 8: AlertTable has all required columns
-    total_tests += 1
-    mapper = inspect(AlertTable)
-    alert_columns = [c.key for c in mapper.columns]
-    required_alert_cols = [
-        "id", "entity_type", "entity_id", "reference_id",
-        "title", "description", "severity", "category",
-        "suggested_actions", "created_at"
-    ]
-    for col in required_alert_cols:
-        if col not in alert_columns:
-            all_failures.append(f"AlertTable missing column: {col}")
+    validator.add_test(
+        "FeatureAnalysisTable has required columns",
+        lambda: has_all_columns(
+            FeatureAnalysisTable,
+            ["id", "feature_description", "analysis_text", "created_at"]
+        ),
+        True,
+    )
 
-    # Test 9: FeatureAnalysisTable exists and has correct name
-    total_tests += 1
-    if FeatureAnalysisTable.__tablename__ != "feature_analyses":
-        all_failures.append(
-            f"FeatureAnalysisTable name: Expected 'feature_analyses', got '{FeatureAnalysisTable.__tablename__}'"
-        )
-
-    # Test 10: FeatureAnalysisTable has all required columns
-    total_tests += 1
-    mapper = inspect(FeatureAnalysisTable)
-    fa_columns = [c.key for c in mapper.columns]
-    required_fa_cols = ["id", "feature_description", "analysis_text", "created_at"]
-    for col in required_fa_cols:
-        if col not in fa_columns:
-            all_failures.append(f"FeatureAnalysisTable missing column: {col}")
-
-    # Final validation result
-    if all_failures:
-        print(f"❌ VALIDATION FAILED - {len(all_failures)} of {total_tests} tests failed:")
-        for failure in all_failures:
-            print(f"  - {failure}")
-        sys.exit(1)
-    else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
-        sys.exit(0)
+    sys.exit(validator.run())
