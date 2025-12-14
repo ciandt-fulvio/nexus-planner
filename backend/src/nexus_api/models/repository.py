@@ -82,81 +82,80 @@ class Repository(BaseModel):
 if __name__ == "__main__":
     import sys
 
-    all_validation_failures: list[str] = []
-    total_tests = 0
+    from nexus_api.models import AlertType
+    from nexus_api.testing.validation_helpers import ValidationHelper
+
+    validator = ValidationHelper()
 
     # Test 1: ActivityLevel enum values
-    total_tests += 1
-    try:
-        expected_values = {"high", "medium", "low", "stale"}
-        actual_values = {level.value for level in ActivityLevel}
-        if actual_values != expected_values:
-            all_validation_failures.append(
-                f"ActivityLevel values: Expected {expected_values}, got {actual_values}"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"ActivityLevel test failed: {e}")
+    validator.add_test(
+        "ActivityLevel values",
+        lambda: {level.value for level in ActivityLevel},
+        {"high", "medium", "low", "stale"},
+    )
 
     # Test 2: TopContributor creation
-    total_tests += 1
-    try:
-        contributor = TopContributor(
-            name="Alice", email="alice@test.com", commits=50, percentage=50
-        )
-        if contributor.name != "Alice" or contributor.percentage != 50:
-            all_validation_failures.append(
-                f"TopContributor: Expected Alice/50, got {contributor.name}/{contributor.percentage}"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"TopContributor test failed: {e}")
+    validator.add_test(
+        "TopContributor creation",
+        lambda: (
+            contributor := TopContributor(
+                name="Alice", email="alice@test.com", commits=50, percentage=50
+            ),
+            (contributor.name, contributor.percentage),
+        )[1],
+        ("Alice", 50),
+    )
 
     # Test 3: Hotspot creation
-    total_tests += 1
-    try:
-        hotspot = Hotspot(
-            path="src/main.ts", changes=100, lastModified="2024-01-15", contributors=5
-        )
-        if hotspot.path != "src/main.ts" or hotspot.changes != 100:
-            all_validation_failures.append(
-                f"Hotspot: Expected src/main.ts/100, got {hotspot.path}/{hotspot.changes}"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"Hotspot test failed: {e}")
+    validator.add_test(
+        "Hotspot creation",
+        lambda: (
+            hotspot := Hotspot(
+                path="src/main.ts", changes=100, lastModified="2024-01-15", contributors=5
+            ),
+            (hotspot.path, hotspot.changes),
+        )[1],
+        ("src/main.ts", 100),
+    )
 
     # Test 4: Repository creation with all fields
-    total_tests += 1
-    try:
-        from nexus_api.models import AlertType
-
-        repo = Repository(
-            id="1",
-            name="test-repo",
-            description="Test description",
-            lastCommit="2024-01-15",
-            totalCommits=100,
-            contributors=5,
-            activity=ActivityLevel.HIGH,
-            knowledgeConcentration=45,
-            topContributors=[
-                TopContributor(name="Alice", email="alice@test.com", commits=60, percentage=60)
-            ],
-            hotspots=[
-                Hotspot(path="src/main.ts", changes=50, lastModified="2024-01-15", contributors=3)
-            ],
-            dependencies=["other-repo"],
-            alerts=[Alert(type=AlertType.INFO, message="Test")],
-        )
-        if repo.id != "1" or repo.name != "test-repo":
-            all_validation_failures.append(
-                f"Repository: Expected id=1/name=test-repo, got {repo.id}/{repo.name}"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"Repository creation test failed: {e}")
+    validator.add_test(
+        "Repository creation",
+        lambda: (
+            repo := Repository(
+                id="1",
+                name="test-repo",
+                description="Test description",
+                lastCommit="2024-01-15",
+                totalCommits=100,
+                contributors=5,
+                activity=ActivityLevel.HIGH,
+                knowledgeConcentration=45,
+                topContributors=[
+                    TopContributor(
+                        name="Alice", email="alice@test.com", commits=60, percentage=60
+                    )
+                ],
+                hotspots=[
+                    Hotspot(
+                        path="src/main.ts",
+                        changes=50,
+                        lastModified="2024-01-15",
+                        contributors=3,
+                    )
+                ],
+                dependencies=["other-repo"],
+                alerts=[Alert(type=AlertType.INFO, message="Test")],
+            ),
+            (repo.id, repo.name),
+        )[1],
+        ("1", "test-repo"),
+    )
 
     # Test 5: Repository activity from string
-    total_tests += 1
-    try:
-        repo = Repository(
+    validator.add_test(
+        "Repository activity from string",
+        lambda: Repository(
             id="1",
             name="test",
             description="Test",
@@ -169,18 +168,14 @@ if __name__ == "__main__":
             hotspots=[],
             dependencies=[],
             alerts=[],
-        )
-        if repo.activity != ActivityLevel.MEDIUM:
-            all_validation_failures.append(
-                f"Repository activity: Expected MEDIUM, got {repo.activity}"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"Repository activity test failed: {e}")
+        ).activity,
+        ActivityLevel.MEDIUM,
+    )
 
     # Test 6: Repository serialization
-    total_tests += 1
-    try:
-        repo = Repository(
+    validator.add_test(
+        "Repository serialization",
+        lambda: Repository(
             id="1",
             name="test",
             description="Test",
@@ -193,23 +188,8 @@ if __name__ == "__main__":
             hotspots=[],
             dependencies=[],
             alerts=[],
-        )
-        data = repo.model_dump()
-        if data["activity"] != "stale":
-            all_validation_failures.append(
-                f"Repository serialization: Expected activity='stale', got {data['activity']}"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"Repository serialization test failed: {e}")
+        ).model_dump()["activity"],
+        "stale",
+    )
 
-    # Final validation result
-    if all_validation_failures:
-        print(
-            f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:"
-        )
-        for failure in all_validation_failures:
-            print(f"  - {failure}")
-        sys.exit(1)
-    else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
-        sys.exit(0)
+    sys.exit(validator.run())

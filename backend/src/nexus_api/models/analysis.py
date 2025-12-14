@@ -120,102 +120,71 @@ class AnalyzeFeatureRequest(BaseModel):
 if __name__ == "__main__":
     import sys
 
-    all_validation_failures: list[str] = []
-    total_tests = 0
+    from nexus_api.testing.validation_helpers import ValidationHelper
+
+    validator = ValidationHelper()
 
     # Test 1: RiskLevel enum values
-    total_tests += 1
-    try:
-        expected_values = {"high", "medium", "low"}
-        actual_values = {level.value for level in RiskLevel}
-        if actual_values != expected_values:
-            all_validation_failures.append(
-                f"RiskLevel values: Expected {expected_values}, got {actual_values}"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"RiskLevel test failed: {e}")
+    validator.add_test(
+        "RiskLevel values",
+        lambda: {level.value for level in RiskLevel},
+        {"high", "medium", "low"},
+    )
 
     # Test 2: ImpactedRepo creation
-    total_tests += 1
-    try:
-        repo = ImpactedRepo(
-            name="reports-service",
-            confidence=95,
-            reasoning="Test",
-            modules=["src/api/"],
-        )
-        if repo.name != "reports-service" or repo.confidence != 95:
-            all_validation_failures.append(
-                f"ImpactedRepo: Expected reports-service/95, got {repo.name}/{repo.confidence}"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"ImpactedRepo test failed: {e}")
+    validator.add_test(
+        "ImpactedRepo creation",
+        lambda: (
+            repo := ImpactedRepo(
+                name="reports-service",
+                confidence=95,
+                reasoning="Test",
+                modules=["src/api/"],
+            ),
+            (repo.name, repo.confidence),
+        )[1],
+        ("reports-service", 95),
+    )
 
     # Test 3: FeatureAnalysis creation
-    total_tests += 1
-    try:
-        analysis = FeatureAnalysis(
+    validator.add_test(
+        "FeatureAnalysis creation",
+        lambda: FeatureAnalysis(
             feature="Test feature",
             impactedRepos=[],
             recommendedPeople=[],
             risks=[],
             suggestedOrder=[],
             additionalRecommendations=[],
-        )
-        if analysis.feature != "Test feature":
-            all_validation_failures.append(
-                f"FeatureAnalysis feature: Expected 'Test feature', got '{analysis.feature}'"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"FeatureAnalysis test failed: {e}")
+        ).feature,
+        "Test feature",
+    )
 
     # Test 4: AnalyzeFeatureRequest validation - valid
-    total_tests += 1
-    try:
-        request = AnalyzeFeatureRequest(description="Valid description")
-        if request.description != "Valid description":
-            all_validation_failures.append(
-                f"Request description: Expected 'Valid description', got '{request.description}'"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"Valid request test failed: {e}")
+    validator.add_test(
+        "Valid request",
+        lambda: AnalyzeFeatureRequest(description="Valid description").description,
+        "Valid description",
+    )
 
     # Test 5: AnalyzeFeatureRequest validation - empty rejected
-    total_tests += 1
-    try:
-        AnalyzeFeatureRequest(description="")
-        all_validation_failures.append(
-            "Empty description: Expected validation error, but none raised"
-        )
-    except ValueError:
-        pass  # Expected
-    except Exception as e:
-        all_validation_failures.append(
-            f"Empty description test: Unexpected error {type(e).__name__}"
-        )
+    def test_empty_rejected():
+        try:
+            AnalyzeFeatureRequest(description="")
+            return False  # Should have raised ValueError
+        except ValueError:
+            return True  # Expected
+
+    validator.add_test("Empty description rejected", test_empty_rejected, True)
 
     # Test 6: AnalyzeFeatureRequest validation - whitespace rejected
-    total_tests += 1
-    try:
-        AnalyzeFeatureRequest(description="   ")
-        all_validation_failures.append(
-            "Whitespace description: Expected validation error, but none raised"
-        )
-    except ValueError:
-        pass  # Expected
-    except Exception as e:
-        all_validation_failures.append(
-            f"Whitespace description test: Unexpected error {type(e).__name__}"
-        )
+    def test_whitespace_rejected():
+        try:
+            AnalyzeFeatureRequest(description="   ")
+            return False  # Should have raised ValueError
+        except ValueError:
+            return True  # Expected
 
-    # Final validation result
-    if all_validation_failures:
-        print(
-            f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:"
-        )
-        for failure in all_validation_failures:
-            print(f"  - {failure}")
-        sys.exit(1)
-    else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
-        sys.exit(0)
+    validator.add_test("Whitespace description rejected", test_whitespace_rejected, True)
+
+    sys.exit(validator.run())

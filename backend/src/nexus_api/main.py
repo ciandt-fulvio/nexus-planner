@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from loguru import logger
 
 from nexus_api.config import settings
-from nexus_api.db.database import async_session, Base, engine
+from nexus_api.db.database import Base, async_session, engine
 from nexus_api.routers import analysis, people, repositories
 
 # Configure loguru
@@ -95,30 +95,27 @@ if __name__ == "__main__":
 
     from fastapi.testclient import TestClient
 
-    all_validation_failures: list[str] = []
-    total_tests = 0
+    from nexus_api.testing.validation_helpers import ValidationHelper
 
+    validator = ValidationHelper()
     client = TestClient(app)
 
-    # Test 1: Health check endpoint
-    total_tests += 1
-    try:
-        response = client.get("/health")
-        if response.status_code != 200:
-            all_validation_failures.append(
-                f"Health check status: Expected 200, got {response.status_code}"
-            )
-        expected_body = {"status": "healthy"}
-        if response.json() != expected_body:
-            all_validation_failures.append(
-                f"Health check body: Expected {expected_body}, got {response.json()}"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"Health check failed: {e}")
+    # Test 1: Health check endpoint returns 200
+    validator.add_test(
+        "Health check status",
+        lambda: client.get("/health").status_code,
+        200,
+    )
 
-    # Test 2: CORS headers present
-    total_tests += 1
-    try:
+    # Test 2: Health check returns correct body
+    validator.add_test(
+        "Health check body",
+        lambda: client.get("/health").json(),
+        {"status": "healthy"},
+    )
+
+    # Test 3: CORS headers present
+    def test_cors_headers():
         response = client.options(
             "/health",
             headers={
@@ -126,35 +123,22 @@ if __name__ == "__main__":
                 "Access-Control-Request-Method": "GET",
             },
         )
-        if "access-control-allow-origin" not in response.headers:
-            all_validation_failures.append("CORS: Missing access-control-allow-origin header")
-    except Exception as e:
-        all_validation_failures.append(f"CORS test failed: {e}")
+        return "access-control-allow-origin" in response.headers
 
-    # Test 3: OpenAPI docs accessible
-    total_tests += 1
-    try:
-        response = client.get("/openapi.json")
-        if response.status_code != 200:
-            all_validation_failures.append(
-                f"OpenAPI status: Expected 200, got {response.status_code}"
-            )
-        openapi = response.json()
-        if openapi.get("info", {}).get("title") != "Nexus API":
-            all_validation_failures.append(
-                f"OpenAPI title: Expected 'Nexus API', got {openapi.get('info', {}).get('title')}"
-            )
-    except Exception as e:
-        all_validation_failures.append(f"OpenAPI test failed: {e}")
+    validator.add_test("CORS headers present", test_cors_headers, True)
 
-    # Final validation result
-    if all_validation_failures:
-        print(
-            f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:"
-        )
-        for failure in all_validation_failures:
-            print(f"  - {failure}")
-        sys.exit(1)
-    else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
-        sys.exit(0)
+    # Test 4: OpenAPI docs accessible
+    validator.add_test(
+        "OpenAPI status",
+        lambda: client.get("/openapi.json").status_code,
+        200,
+    )
+
+    # Test 5: OpenAPI has correct title
+    validator.add_test(
+        "OpenAPI title",
+        lambda: client.get("/openapi.json").json().get("info", {}).get("title"),
+        "Nexus API",
+    )
+
+    sys.exit(validator.run())

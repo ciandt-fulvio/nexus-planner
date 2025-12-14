@@ -65,55 +65,44 @@ if __name__ == "__main__":
 
     from fastapi.testclient import TestClient
 
-    # Import the main app to test with full context
     from nexus_api.main import app
+    from nexus_api.testing.validation_helpers import ValidationHelper
 
-    all_validation_failures: list[str] = []
-    total_tests = 0
-
-    # Use main app with lifespan and database
+    validator = ValidationHelper()
     client = TestClient(app)
 
     # Test 1: GET /api/v1/people returns 200
-    total_tests += 1
-    response = client.get("/api/v1/people")
-    if response.status_code != 200:
-        all_validation_failures.append(
-            f"GET /people status: Expected 200, got {response.status_code}"
-        )
+    validator.add_test(
+        "GET /people status",
+        lambda: client.get("/api/v1/people").status_code,
+        200,
+    )
 
-    # Test 2: Response is a list of 5 people (from mock data fallback)
-    total_tests += 1
-    data = response.json()
-    if not isinstance(data, list) or len(data) != 5:
-        all_validation_failures.append(
-            f"GET /people data: Expected list of 5, got {type(data).__name__} of {len(data) if isinstance(data, list) else 'N/A'}"
-        )
+    # Test 2: Response is a list of 5 people
+    def test_response_structure():
+        response = client.get("/api/v1/people")
+        data = response.json()
+        return (isinstance(data, list), len(data))
+
+    validator.add_test("Response structure", test_response_structure, (True, 5))
 
     # Test 3: First person has correct fields
-    total_tests += 1
-    if data:
-        first = data[0]
-        required_fields = ["id", "name", "email", "avatar", "repositories", "technologies"]
-        missing = [f for f in required_fields if f not in first]
-        if missing:
-            all_validation_failures.append(f"First person missing fields: {missing}")
+    def test_first_person_fields():
+        data = client.get("/api/v1/people").json()
+        if data:
+            first = data[0]
+            required_fields = ["id", "name", "email", "avatar", "repositories", "technologies"]
+            missing = [f for f in required_fields if f not in first]
+            return len(missing) == 0
+        return False
+
+    validator.add_test("First person has required fields", test_first_person_fields, True)
 
     # Test 4: First person is Ana Silva
-    total_tests += 1
-    if data and data[0].get("name") != "Ana Silva":
-        all_validation_failures.append(
-            f"First person name: Expected 'Ana Silva', got '{data[0].get('name')}'"
-        )
+    validator.add_test(
+        "First person name",
+        lambda: client.get("/api/v1/people").json()[0].get("name"),
+        "Ana Silva",
+    )
 
-    # Final validation result
-    if all_validation_failures:
-        print(
-            f"❌ VALIDATION FAILED - {len(all_validation_failures)} of {total_tests} tests failed:"
-        )
-        for failure in all_validation_failures:
-            print(f"  - {failure}")
-        sys.exit(1)
-    else:
-        print(f"✅ VALIDATION PASSED - All {total_tests} tests produced expected results")
-        sys.exit(0)
+    sys.exit(validator.run())
